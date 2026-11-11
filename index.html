@@ -1,0 +1,1818 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#3F3FD4">
+<meta name="description" content="Capylum : simule ta vie et apprends à gérer ton argent en jouant (budget, logement, voiture, maison, investissements).">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Capylum">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Capylum · Ma vie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<script src="vendor/three.min.js"></script>
+<script>window.THREE||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>')</script>
+<style>
+:root{
+  --indigo:#3F3FD4;--indigo-d:#2D2DA6;--coral:#E0605F;--grass:#8DB36B;
+  --ink:#2F3142;--muted:#8A8FA3;--line:#E6E8F0;--card:#FFFFFF;--bg:#F4F6FB;
+  --good:#24A866;--good-bg:#E2F7EC;--bad:#E5484D;--bad-bg:#FDE8E8;--warn:#F59E0B;--neu-bg:#ECECFF;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden}
+body{font-family:Nunito,system-ui,sans-serif;font-weight:700;color:var(--ink);background:var(--grass);user-select:none;-webkit-user-select:none}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+
+/* ---------- VILLE ---------- */
+#city{position:fixed;inset:0;overflow:hidden;touch-action:none}
+#city canvas{display:block;width:100%;height:100%}
+.haze{position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(rgba(255,255,255,0),rgba(236,246,226,.55));pointer-events:none}
+#labels{position:absolute;inset:0;pointer-events:none}
+.bub{position:absolute;left:0;top:0;pointer-events:auto;border:none;background:var(--bc);color:#fff;border-radius:999px;padding:8px 15px 8px 11px;
+  font-weight:900;font-size:14px;display:flex;align-items:center;gap:7px;white-space:nowrap;box-shadow:0 6px 14px rgba(25,25,110,.28);--bc:var(--indigo);will-change:transform}
+.bub::after{content:"";position:absolute;left:50%;bottom:-7px;margin-left:-7px;border:7px solid transparent;border-bottom:0;border-top-color:var(--bc)}
+.bub .ico{font-size:16px}
+.bub .badge{position:absolute;top:-8px;right:-8px;width:23px;height:23px;border-radius:50%;display:grid;place-items:center;border:2.5px solid #fff;font-size:11px;color:#fff}
+.bub.done .badge{background:#2DB36F}
+.bub.active{z-index:2;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 6px 14px rgba(25,25,110,.28),0 0 0 0 rgba(63,63,212,.45)}50%{box-shadow:0 6px 14px rgba(25,25,110,.28),0 0 0 10px rgba(63,63,212,0)}}
+.bub.locked{--bc:#B7BBC9;color:#F2F3F8}
+.bub.locked .badge{background:#5E6275}
+.bub.off{--bc:rgba(112,122,165,.55);color:rgba(255,255,255,.85)}
+.bub.off .badge{background:rgba(70,75,100,.6)}
+.tag3d{position:absolute;left:0;top:0;background:#fff;color:var(--ink);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:900;box-shadow:0 3px 8px rgba(0,0,0,.15);pointer-events:none;white-space:nowrap}
+.calcard{position:absolute;z-index:3;top:calc(14px + env(safe-area-inset-top));left:16px;background:#fff;border-radius:16px;width:150px;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.16)}
+.calcard .band{height:24px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,#E5484D,#F7A23B)}
+.calcard .rg{position:absolute;top:-9px;width:9px;height:20px;border-radius:6px;background:#2F3142}
+.calcard b{display:block;color:#6B6F80;font-size:16px;line-height:1.05;letter-spacing:1.5px;padding:8px 6px 4px;font-weight:900}
+.calcard small{display:block;color:var(--muted);font-size:12px;padding-bottom:9px}
+.wallet{position:absolute;left:50%;bottom:calc(70px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#fff;border-radius:999px;display:flex;align-items:center;gap:12px;padding:7px 78px 7px 7px;box-shadow:0 10px 26px rgba(0,0,0,.16);border:none;color:var(--ink);text-align:left}
+.wallet .ring{position:relative;width:58px;height:58px}
+.wallet .ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.wallet .ring span{position:absolute;inset:0;display:grid;place-items:center;font-size:24px;font-weight:900;color:#1E7A4A}
+.wallet small{display:block;color:var(--muted);font-size:12.5px}
+.wallet b{display:block;font-size:24px;font-weight:900;letter-spacing:-.3px}
+.wallet .av{position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:76px;height:76px;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 4px var(--coral),0 6px 14px rgba(0,0,0,.18);overflow:hidden;background:#DDE3F3}
+.filters{position:absolute;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#fff;border-radius:999px;display:flex;box-shadow:0 6px 18px rgba(0,0,0,.14);overflow:hidden}
+.filters button{background:none;border:none;padding:9px 18px;color:var(--coral);display:flex;align-items:center;gap:6px;font-weight:900;font-size:13px}
+.filters button+button{border-left:1.5px solid #EEE}
+.filters svg{width:20px;height:20px}
+.hint{position:absolute;bottom:calc(160px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:rgba(47,49,66,.78);color:#fff;border-radius:999px;padding:6px 14px;font-size:12.5px;white-space:nowrap;pointer-events:none;transition:opacity .6s}
+#fallback{position:absolute;inset:0;display:none;padding:150px 16px 170px;overflow:auto;background:var(--grass)}
+#fallback .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:30px 14px;max-width:700px;margin:0 auto}
+#fallback .lot{position:relative;background:#7FA65E;border-radius:16px;height:110px;display:flex;align-items:flex-end;justify-content:center;font-size:56px;padding-bottom:6px}
+#fallback .bub{position:absolute;left:50%;top:-14px;transform:translateX(-50%)}
+
+/* ---------- PLATEAU ---------- */
+#board{position:fixed;inset:0;background:var(--bg);overflow-y:auto;overflow-x:hidden;z-index:5}
+.bwrap{max-width:720px;margin:0 auto;padding:0 14px calc(120px + env(safe-area-inset-bottom))}
+.bhead{position:sticky;top:0;z-index:4;background:var(--pc);color:#fff;margin:0 -14px;padding:calc(12px + env(safe-area-inset-top)) 14px 14px;border-radius:0 0 22px 22px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.bh1{display:flex;align-items:center;gap:10px}
+.bback{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:12px;padding:8px 12px;font-weight:900;font-size:14px}
+.btitle{flex:1;min-width:0}
+.btitle b{display:block;font-size:19px;font-weight:900;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btitle small{opacity:.9;font-size:13px}
+.bav{width:46px;height:46px;border-radius:50%;border:3px solid #fff;overflow:hidden;flex:none;background:#DDE3F3}
+.stats{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.st{flex:1;min-width:0;background:rgba(255,255,255,.17);border-radius:14px;padding:7px 10px}
+.st small{display:block;font-size:11.5px;opacity:.9}
+.st b{font-size:17px;font-weight:900;white-space:nowrap}
+.st.neg b{color:#FFD3D3}
+.joybar{height:7px;border-radius:6px;background:rgba(255,255,255,.3);margin-top:5px;overflow:hidden}
+.joybar i{display:block;height:100%;background:#FFE36E;border-radius:6px}
+.goal{background:#fff;border-radius:16px;margin:14px 0 10px;padding:11px 14px;box-shadow:0 2px 8px rgba(0,0,0,.05);font-size:14px}
+.goal .gb{height:9px;border-radius:8px;background:var(--line);margin-top:7px;overflow:hidden}
+.goal .gb i{display:block;height:100%;background:linear-gradient(90deg,#F7A23B,#24A866);border-radius:8px;transition:width .5s}
+.cal{position:relative;background:#fff;border-radius:20px;padding:10px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.wk,.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.wk div{text-align:center;font-size:11px;color:var(--muted);font-weight:900;padding:2px 0 5px}
+.tile{position:relative;min-width:0;aspect-ratio:1/1.05;border-radius:11px;background:var(--tc,#F3F4F8);border:2px solid rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;padding:0;font-size:clamp(15px,4.6vw,24px);transition:transform .15s;color:var(--ink)}
+.tile .n{position:absolute;top:2px;left:5px;font-size:10px;font-weight:900;color:rgba(47,49,66,.55)}
+.tile .amt{position:absolute;bottom:1px;left:0;right:0;text-align:center;font-size:9px;font-weight:900;color:rgba(47,49,66,.65)}
+.tile.past{opacity:.38}
+.tile.now{border-color:var(--pc);box-shadow:0 0 0 2px var(--pc)}
+.tile.empty{background:transparent;border:none}
+.pawn{position:absolute;width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 3px var(--coral),0 5px 10px rgba(0,0,0,.25);overflow:hidden;transition:left .2s ease,top .2s ease;z-index:3;background:#DDE3F3;pointer-events:none}
+.pawn.hop{animation:hop .22s ease}
+@keyframes hop{50%{transform:translateY(-12px) scale(1.08)}}
+.controls{position:fixed;left:0;right:0;bottom:0;z-index:4;background:rgba(244,246,251,.94);backdrop-filter:blur(6px);border-top:1.5px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+.controls .in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.rollbtn{flex:1;border:none;border-radius:18px;padding:16px;font-size:18px;font-weight:900;color:#fff;background:var(--pc);box-shadow:0 5px 0 rgba(0,0,0,.18);letter-spacing:.3px}
+.rollbtn:active:not(:disabled){transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.rollbtn:disabled{opacity:.5}
+.sqbtn{border:none;border-radius:16px;background:#fff;box-shadow:0 3px 0 var(--line),0 0 0 1.5px var(--line);padding:10px 12px;font-size:12px;font-weight:900;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px}
+.sqbtn span{font-size:20px}
+.dwrap{width:58px;height:58px;perspective:500px;flex:none}
+.dice{width:58px;height:58px;position:relative;transform-style:preserve-3d;transition:transform 1s cubic-bezier(.2,.75,.25,1)}
+.face{position:absolute;inset:0;background:#fff;border:2px solid #E1E4EE;border-radius:13px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:7px}
+.face i{width:10px;height:10px;border-radius:50%;background:var(--ink);place-self:center}
+.f1{transform:translateZ(29px)}.f6{transform:rotateY(180deg) translateZ(29px)}.f2{transform:rotateY(90deg) translateZ(29px)}
+.f5{transform:rotateY(-90deg) translateZ(29px)}.f3{transform:rotateX(90deg) translateZ(29px)}.f4{transform:rotateX(-90deg) translateZ(29px)}
+.sec{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-weight:900;margin:18px 4px 8px}
+.stmt{background:#fff;border-radius:18px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.stmt .r{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1.5px dashed var(--line);font-size:14px}
+.stmt .r:last-child{border:none}
+.stmt .d{color:var(--muted);font-size:12px;margin-right:6px}
+.pos{color:var(--good)}.neg{color:var(--bad)}.sav{color:var(--indigo)}.muted{color:var(--muted)}
+
+/* ---------- MODALES ---------- */
+#modal .ov{position:fixed;inset:0;z-index:20;background:rgba(25,27,45,.5);display:flex;align-items:flex-end;justify-content:center;padding:14px}
+@media (min-width:640px){#modal .ov{align-items:center}}
+.sheet{background:#fff;border-radius:24px;max-width:460px;width:100%;max-height:90vh;overflow:auto;animation:up .28s cubic-bezier(.2,.9,.3,1.15);box-shadow:0 20px 50px rgba(0,0,0,.25)}
+@keyframes up{from{transform:translateY(40px) scale(.97);opacity:0}}
+.sh{background:var(--tc,var(--indigo));color:#fff;padding:16px 18px 18px;position:relative}
+.sh .ty{display:flex;justify-content:space-between;font-size:12.5px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;opacity:.95}
+.sh .em{font-size:52px;line-height:1;margin:8px 0 4px}
+.sh h3{margin:0;font-size:22px;font-weight:900}
+.sb{padding:16px 18px 18px}
+.sb p{margin:0 0 14px;font-size:16px;line-height:1.45;color:#45485A}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;border:2px solid var(--line);border-bottom-width:4px;border-radius:16px;padding:12px 13px;background:#fff;font-size:15.5px;font-weight:800;color:var(--ink);width:100%}
+.opt:hover:not(:disabled){border-color:#C8CBF5;background:#FAFAFF}
+.opt:active:not(:disabled){transform:translateY(2px);border-bottom-width:2px}
+.opt:disabled{opacity:.45}
+.opt small{display:block;color:var(--muted);font-weight:700;font-size:12.5px;margin-top:2px}
+.chips{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex:none;max-width:45%}
+.chip{border-radius:999px;padding:3px 8px;font-size:12px;font-weight:900;background:#F1F2F7;white-space:nowrap}
+.chip.neg{background:var(--bad-bg);color:var(--bad)}.chip.pos{background:var(--good-bg);color:var(--good)}
+.chip.sav{background:var(--neu-bg);color:var(--indigo)}.chip.joy{background:#FFF6D6;color:#B07800}
+.verdict{border-radius:16px;padding:14px;margin-bottom:12px}
+.verdict b{display:block;font-size:19px;font-weight:900;margin-bottom:5px}
+.verdict.good{background:var(--good-bg);color:#17734A}.verdict.bad{background:var(--bad-bg);color:#B3262B}.verdict.neu{background:var(--neu-bg);color:var(--indigo-d)}
+.verdict p{margin:0;color:inherit;font-size:15px}
+.btn{display:block;width:100%;border:none;border-radius:16px;padding:15px;font-size:16px;font-weight:900;color:#fff;background:var(--tc,var(--indigo));box-shadow:0 4px 0 rgba(0,0,0,.18);margin-top:10px}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#F1F2F7;color:var(--ink);box-shadow:0 4px 0 #DEE0EA}
+.btn:disabled{opacity:.5}
+.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:15px}
+.row+.row{border-top:1.5px dashed var(--line)}
+.stars{display:flex;justify-content:center;gap:10px;margin:6px 0 4px;font-size:44px}
+.stars span{filter:grayscale(1);opacity:.25;transition:.3s}
+.stars span.on{filter:none;opacity:1;animation:pop .45s cubic-bezier(.3,1.7,.6,1) backwards}
+@keyframes pop{from{transform:scale(.2)}}
+.slist .row{font-size:14px}
+.sw{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+.sw button{width:38px;height:38px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line)}
+.sw button.on{box-shadow:0 0 0 3px var(--indigo)}
+.sw .tx{width:auto;height:auto;border-radius:12px;padding:8px 12px;background:#F1F2F7;border:none;box-shadow:none;font-weight:900;color:var(--ink)}
+.sw .tx.on{background:var(--neu-bg);color:var(--indigo);box-shadow:0 0 0 2px var(--indigo)}
+.lbl{font-size:13px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.5px}
+input.name{width:100%;font:inherit;font-size:17px;font-weight:800;padding:11px 14px;border-radius:14px;border:2px solid var(--line);margin:6px 0 14px;color:var(--ink)}
+.amts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 6px}
+.amts button{border:2px solid var(--line);border-bottom-width:4px;border-radius:14px;background:#fff;padding:10px 4px;font-weight:900;font-size:14px;color:var(--ink)}
+.amts button.on{border-color:var(--indigo);background:var(--neu-bg);color:var(--indigo)}
+#toast{position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:40;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:calc(100% - 28px);max-width:420px}
+#toast div{background:#fff;color:var(--ink);padding:10px 16px;border-radius:14px;font-weight:900;box-shadow:0 8px 20px rgba(0,0,0,.18);animation:up .25s;text-align:center;font-size:14.5px}
+#toast div.neg{color:var(--bad)}#toast div.pos{color:var(--good)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
+#confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:3px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+#onb{position:fixed;inset:0;z-index:15;overflow:auto;background:linear-gradient(180deg,#BFE3FF 0%,#E9F7DF 55%,#8DB36B 100%);display:flex;align-items:center;justify-content:center;padding:20px 14px}
+.ob{width:100%;max-width:480px;background:#fff;border-radius:26px;padding:22px;box-shadow:0 20px 50px rgba(30,40,80,.18);animation:up .3s;margin:auto}
+.obp{height:10px;border-radius:8px;background:var(--line);overflow:hidden;margin-bottom:14px}.obp i{display:block;height:100%;background:linear-gradient(90deg,#3F3FD4,#8B5CF6);border-radius:8px;transition:width .4s}
+.ob .em{font-size:54px;text-align:center;line-height:1.1}
+.ob h2{text-align:center;font-size:23px;font-weight:900;margin:6px 0 4px}
+.ob .sub{text-align:center;color:var(--muted);margin:0 0 16px;font-size:15px}
+.obo{display:grid;gap:10px;margin-bottom:6px}.obo.two{grid-template-columns:1fr 1fr}
+.obb{display:flex;align-items:center;gap:10px;border:2px solid var(--line);border-bottom-width:5px;border-radius:18px;background:#fff;padding:13px;font-size:15.5px;font-weight:900;color:var(--ink);text-align:left}
+.obb span{font-size:26px}.obb:active{transform:translateY(2px);border-bottom-width:3px}
+.obb.on{border-color:var(--indigo);background:var(--neu-bg);color:var(--indigo)}
+.obb.right{border-color:var(--good);background:var(--good-bg);color:#17734A}.obb.wrong{border-color:var(--bad);background:var(--bad-bg);color:#B3262B}
+.obb:disabled{opacity:1}
+.pcard{border-radius:20px;padding:18px;text-align:center;color:#fff;background:linear-gradient(135deg,#3F3FD4,#8B5CF6);margin-bottom:14px}
+.pcard .big{font-size:58px;line-height:1.1}.pcard b{display:block;font-size:24px;font-weight:900}
+.pchips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}.pchips span{background:rgba(255,255,255,.2);border-radius:999px;padding:4px 10px;font-size:13px}
+.adapt{list-style:none;padding:0;margin:0 0 6px}.adapt li{padding:9px 0;border-bottom:1.5px dashed var(--line);font-size:14.5px;line-height:1.4}
+.bub.dream{--bc:#F2B400;color:#3A2A00}
+
+#sky{position:absolute;inset:0;background:linear-gradient(180deg,#4FA8EE,#D3EEFF)}
+#stars{position:absolute;left:0;top:0;width:2px;height:2px;border-radius:50%;opacity:0;transition:opacity 1s}
+#orb{position:absolute;left:80%;top:12%;width:90px;height:90px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,#FFF8DA 0 30%,rgba(255,232,160,.55) 34%,rgba(255,232,160,0) 70%)}
+#orb.moon{background:radial-gradient(circle at 42% 42%,#FFFFFF 0 24%,#DCE4FF 28%,rgba(200,215,255,.3) 34%,rgba(200,215,255,0) 68%)}
+#city canvas{position:absolute;inset:0}
+#labels{opacity:0;transition:opacity .7s}#labels.ready{opacity:1}
+@media (max-width:600px){.bub:not(.active) .lb{display:none}.bub:not(.active){padding:7px 10px}.bub.dream .lb{display:none}}
+.topr{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;z-index:3}
+.chipbtn{border:none;background:rgba(255,255,255,.92);border-radius:999px;padding:8px 14px;font-weight:900;font-size:13.5px;color:var(--ink);box-shadow:0 6px 16px rgba(0,0,0,.14);display:flex;gap:6px;align-items:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.chipbtn small{color:var(--muted);font-size:11px}
+#instBtn{background:var(--indigo);color:#fff;animation:pulse 2s ease-in-out infinite}
+#loader{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:linear-gradient(180deg,#BFE3FF,#E9F7DF 60%,#8DB36B);transition:opacity .7s}
+#loader.gone{opacity:0;pointer-events:none}
+.ldr{text-align:center}.ldr img{width:96px;height:96px;border-radius:24px;box-shadow:0 12px 30px rgba(63,63,212,.3);animation:bob2 1.6s ease-in-out infinite}
+.ldr b{display:block;font-size:30px;font-weight:900;color:#3F3FD4;margin-top:14px}.ldr small{color:#5C6278}
+.ldr .lb{width:170px;height:8px;border-radius:6px;background:rgba(63,63,212,.15);margin:14px auto 0;overflow:hidden}.ldr .lb i{display:block;width:40%;height:100%;background:#3F3FD4;border-radius:6px;animation:ld 1.1s ease-in-out infinite}
+@keyframes ld{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}@keyframes bob2{50%{transform:translateY(-8px)}}
+#wipe{position:fixed;inset:0;z-index:30;pointer-events:none;clip-path:circle(0px at var(--x,50%) var(--y,50%));-webkit-clip-path:circle(0px at var(--x,50%) var(--y,50%));display:grid;place-items:center;font-size:96px}
+#wipe.on{clip-path:circle(150% at var(--x,50%) var(--y,50%));-webkit-clip-path:circle(150% at var(--x,50%) var(--y,50%));transition:clip-path .5s cubic-bezier(.65,0,.35,1),-webkit-clip-path .5s cubic-bezier(.65,0,.35,1)}
+#wipe.on.out{opacity:0;transition:opacity .45s ease}
+.tabs2{display:flex;background:#F1F2F7;border-radius:14px;padding:4px;margin-bottom:12px}.tabs2 button{flex:1;border:none;background:none;border-radius:11px;padding:10px;font-weight:900;color:var(--muted);font-size:14.5px}.tabs2 button.on{background:#fff;color:var(--indigo);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.steps{list-style:none;margin:0 0 6px;padding:0;counter-reset:s}.steps li{position:relative;padding:10px 0 10px 44px;border-bottom:1.5px dashed var(--line);font-size:15px;line-height:1.45}.steps li:last-child{border:none}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:9px;width:30px;height:30px;border-radius:50%;background:var(--neu-bg);color:var(--indigo);display:grid;place-items:center;font-weight:900}
+.ki{display:inline-grid;place-items:center;vertical-align:middle;width:28px;height:28px;border-radius:8px;background:#F1F2F7;margin:0 2px;color:#2F7DD8}.ki svg{width:18px;height:18px}
+.phone{margin:4px auto 12px;width:210px;height:150px;border-radius:28px;border:7px solid #2F3142;background:linear-gradient(#BFE3FF,#E9F7DF);position:relative;overflow:hidden}
+.phone .scr{position:absolute;inset:40px 0 38px;display:grid;place-items:center}.phone .scr img{width:44px;height:44px;border-radius:11px}
+.phone .bar{position:absolute;left:0;right:0;bottom:0;height:36px;background:#F7F7FA;display:flex;justify-content:space-around;align-items:center;color:#2F7DD8;font-size:15px}
+.phone .top{position:absolute;left:0;right:0;top:0;height:34px;background:#F7F7FA;display:flex;justify-content:flex-end;align-items:center;padding-right:8px;gap:6px;color:#5C6278;font-size:12px}
+.phone .hl{animation:hl 1.3s ease-in-out infinite}@keyframes hl{50%{box-shadow:0 0 0 6px rgba(63,63,212,.35);background:#E6E6FF}}
+@media (min-width:1000px){
+ .bwrap{max-width:1180px}
+ .bgrid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,1fr);gap:22px;align-items:start}
+ .bside{position:sticky;top:200px}
+ .stmt{max-height:calc(100vh - 340px);overflow:auto}
+ .controls .in{max-width:1180px}
+ .tile{font-size:27px}.tile .n{font-size:12px}.tile .amt{font-size:11px}
+}
+@media (max-height:520px) and (orientation:landscape){
+ .calcard{transform:scale(.72);transform-origin:top left}
+ .wallet{bottom:calc(54px + env(safe-area-inset-bottom));transform:translateX(-50%) scale(.78)}
+ .filters{transform:translateX(-50%) scale(.85)}
+ .topr{transform:scale(.85);transform-origin:top right}
+ .bhead{position:static}
+}
+</style>
+</head>
+<body>
+
+<div id="loader"><div class="ldr"><img src="icons/icon-192.png" alt=""><b>Capylum</b><small>Construction de ta ville…</small><div class="lb"><i></i></div></div></div>
+<div id="wipe"></div>
+<!-- VILLE 3D -->
+<div id="city">
+  <div id="sky"><div id="stars"></div><div id="orb"></div></div>
+  <div id="fallback"><div class="fgrid" id="fgrid"></div></div>
+  <div class="haze"></div>
+  <div id="labels"></div>
+  <div class="calcard"><div class="band"></div><div class="rg" style="left:36px"></div><div class="rg" style="right:36px"></div><b>MA<br>VIE</b><small id="calAge"></small></div>
+  <div class="topr"><button class="chipbtn" id="timeBtn" data-a="daymode" aria-label="Jour ou nuit">☀️</button><button class="chipbtn" id="instBtn" data-a="install">📲 Installer l’app</button></div>
+  <div class="hint" id="hint">👆 Glisse pour tourner la ville · touche un bâtiment</div>
+  <button class="wallet" data-a="bilanCity" aria-label="Mon argent">
+    <div class="ring"><svg viewBox="0 0 58 58"><defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#E5484D"/><stop offset="1" stop-color="#F7A23B"/></linearGradient></defs>
+      <circle cx="29" cy="29" r="24" fill="none" stroke="#F1F2F7" stroke-width="7"/><circle id="ringArc" cx="29" cy="29" r="24" fill="none" stroke="url(#rg)" stroke-width="7" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="150.8"/></svg><span>€</span></div>
+    <div><small>Sur mon compte</small><b id="wMoney">0 €</b></div>
+    <div class="av" id="wAv"></div>
+  </button>
+  <div class="filters">
+    <button data-a="creator" aria-label="Mon personnage"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg>Moi</button>
+    <button data-a="bilanCity" aria-label="Mon bilan"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="12" width="4" height="9" rx="1.5"/><rect x="10" y="7" width="4" height="14" rx="1.5"/><rect x="17" y="3" width="4" height="18" rx="1.5"/></svg>Bilan</button>
+    <button data-a="settings" aria-label="Réglages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="8.5" cy="12" r="5.5"/><circle cx="15.5" cy="12" r="5.5"/></svg>Options</button>
+  </div>
+</div>
+
+<!-- PLATEAU -->
+<div id="board" class="hidden"></div>
+<div id="onb" class="hidden"></div>
+<div id="modal"></div>
+<div id="toast"></div>
+<div id="confetti"></div>
+
+<script>
+/* =========================================================
+   OUTILS
+   ========================================================= */
+const $=s=>document.querySelector(s);
+const fmt=n=>(n<0?'−':'')+Math.abs(Math.round(n)).toLocaleString('fr-FR')+' €';
+const sign=n=>(n>0?'+':n<0?'−':'')+Math.abs(Math.round(n)).toLocaleString('fr-FR')+' €';
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const MC=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const JOURS=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+
+/* =========================================================
+   PERSONNAGE
+   ========================================================= */
+const DEF_CHAR={name:'Alex',skin:'#F1C9A5',hair:'#3B2A20',style:'court',top:'#E0605F'};
+const SKINS=['#FBE0C8','#F1C9A5','#D9A47C','#A86B45','#6E4630'];
+const HAIRS=['#2B1D16','#6B4423','#B5652A','#E8C46A','#1F1F1F','#C94F7C'];
+const STYLES=[['court','Court'],['long','Long'],['boucle','Bouclé'],['chignon','Chignon']];
+const TOPS=['#E0605F','#3F3FD4','#2DB36F','#F5A623','#8B5CF6','#22B8CF','#2F3142'];
+let avId=0;
+function avatarSVG(c,size=64){
+  c=c||DEF_CHAR;const h=c.hair,s=c.skin,id='av'+(avId++);
+  const court=`<path d="M20 33 Q19 14 36 14 Q53 14 52 33 Q48 23 36 23 Q25 23 20 33Z" fill="${h}"/>`;
+  const back=c.style==='long'?`<path d="M18 34 Q16 12 36 11 Q56 12 54 34 L56 60 Q48 64 44 56 L44 36 L28 36 L28 56 Q24 64 16 60Z" fill="${h}"/>`:'';
+  let curls='';if(c.style==='boucle'){for(let a=175;a<=365;a+=19){const r=a*Math.PI/180;curls+=`<circle cx="${36+15.5*Math.cos(r)}" cy="${31+15.5*Math.sin(r)}" r="5.6" fill="${h}"/>`}curls+=`<circle cx="36" cy="18" r="9" fill="${h}"/>`}
+  const front={court,long:`<path d="M20 34 Q19 13 36 13 Q53 13 52 34 Q47 22 34 24 Q26 25 20 34Z" fill="${h}"/>`,boucle:curls,chignon:`<circle cx="36" cy="11" r="6.5" fill="${h}"/>`+court}[c.style]||court;
+  return`<svg viewBox="0 0 72 72" width="${size}" height="${size}" style="display:block"><defs><clipPath id="${id}"><circle cx="36" cy="36" r="36"/></clipPath></defs><g clip-path="url(#${id})">
+  <rect width="72" height="72" fill="#DDE3F3"/>${back}<path d="M10 74 Q12 52 36 50 Q60 52 62 74Z" fill="${c.top}"/>
+  <rect x="31" y="43" width="10" height="9" fill="${s}"/><circle cx="36" cy="34" r="15" fill="${s}"/>
+  <circle cx="30.5" cy="35" r="1.9" fill="#2F3142"/><circle cx="41.5" cy="35" r="1.9" fill="#2F3142"/>
+  <circle cx="27" cy="39.5" r="2.4" fill="#F28B82" opacity=".45"/><circle cx="45" cy="39.5" r="2.4" fill="#F28B82" opacity=".45"/>
+  <path d="M31.5 41 Q36 45 40.5 41" stroke="#2F3142" stroke-width="1.8" fill="none" stroke-linecap="round"/>${front}</g></svg>`;
+}
+
+/* =========================================================
+   CASES DU PLATEAU
+   ========================================================= */
+const TYPES={
+  start:{ic:'🏁',n:'Début du mois',c:'#E7E8FB'},
+  pay:{ic:'💶',n:'Jour de paie',c:'#CFF3DF'},
+  fixed:{ic:'🧾',n:'Prélèvement',c:'#FFEBD6'},
+  rest:{ic:'☀️',n:'Dimanche',c:'#FFF6CC'},
+  sortie:{ic:'🎉',n:'Sortie du week-end',c:'#FFE1EE',tc:'#E2558F'},
+  choice:{ic:'🤔',n:'Décision',c:'#E4E4FF',tc:'#3F3FD4'},
+  quiz:{ic:'🧠',n:'Quiz',c:'#EEE2FF',tc:'#7C4DDB'},
+  shop:{ic:'🛍️',n:'Envie d’achat',c:'#FFE3E6',tc:'#D9465E'},
+  event:{ic:'⚡',n:'Imprévu',c:'#FFE0D6',tc:'#E2643A'},
+  luck:{ic:'🍀',n:'Bonne surprise',c:'#DDF5E3',tc:'#1F9D5C'},
+  mail:{ic:'📬',n:'Courrier',c:'#DDEBFF',tc:'#2F7DD8'},
+};
+const WEIGHTS={choice:3.2,quiz:2,shop:2,event:2,luck:1.4,mail:1.4};
+const CATS={logement:'🏠 Logement',factures:'🧾 Factures',courses:'🛒 Courses',transport:'🚌 Transport',loisirs:'🎉 Loisirs',achats:'🛍️ Achats',imprevus:'⚡ Imprévus',autre:'📦 Autres'};
+
+/* =========================================================
+   CARTES COMMUNES (vie de tous les jours)
+   fx : money (compte), pay (payé avec l'épargne d'abord), toSavings, toInvest, joy, cat
+   ok : 1 bon réflexe · 0 mauvais réflexe · null choix libre
+   ========================================================= */
+const COMMON={
+ choice:[
+  {e:'🏷️',t:'Revendre ma voiture',cond:G=>G.car&&G.car.value>500,q:G=>`Ta « ${G.car.n} » vaut aujourd’hui environ ${fmt(G.car.value)} : une voiture perd 10 à 20 % de sa valeur chaque année. Tu t’en sers de moins en moins.`,
+   o:G=>[{t:`Je la vends à un garage (${fmt(G.car.value*.75)})`,s:'Rapide, sans démarches',fx:{money:Math.round(G.car.value*.75),sellCar:1},ok:null,f:'Simple, mais le garage garde une belle marge. Et fini l’assurance et l’essence !'},
+     {t:`Je la vends entre particuliers (${fmt(G.car.value*.95)})`,s:'Annonce, visites, contrôle technique',fx:{money:Math.round(G.car.value*.95),sellCar:1,joy:-2},ok:1,f:'Plus de démarches, mais tu récupères bien plus. Et plus d’assurance ni d’essence à payer !'},
+     {t:'Je la garde',ok:null,f:'Une voiture qui dort coûte quand même : assurance, entretien…'}]},
+  {e:'🔧',t:'Le bon plan auto',cond:G=>G.age>=18,q:'Une voiture d’occasion est à vendre 2 500 €. « Elle a juste besoin de pneus », dit le vendeur. Bien réparée, elle se revend 3 600 €.',
+   o:[{t:'Je la fais vérifier par un mécanicien (60 €)',fx:G=>{if(Math.random()<.5){G._note='Le mécanicien découvre une boîte de vitesses fichue : tu évites un piège !';return{money:-60,cat:'transport'}}G._note='Tout est bon : tu l’achètes, changes les pneus (300 €) et la revends 3 600 € !';return{money:740,cat:'transport',joy:4}},ok:1,f:'Faire vérifier avant d’acheter, c’est la base de l’achat-revente.'},
+      {t:'Je l’achète direct pour la revendre',fx:G=>{if(Math.random()<.5){G._note='Bonne pioche : revendue 3 600 € après les pneus.';return{money:800,cat:'transport',joy:3}}G._note='Aïe : la boîte de vitesses était morte (1 800 € de réparation).';return{money:-1500,cat:'transport',joy:-6}},ok:0,f:'Acheter sans vérifier, c’est jouer à pile ou face avec ton argent.'},
+      {t:'Pas pour moi',ok:null,f:'L’achat-revente demande du temps et des connaissances.'}]},
+  {e:'🛞',t:'Contrôle technique',cond:G=>G.car&&G.car.value>0,q:'Ta voiture doit passer le contrôle technique (80 €)… et il faut changer les plaquettes de frein (180 €).',o:[
+     {t:'Je fais tout',fx:{pay:260,cat:'transport'},ok:1,f:'Obligatoire tous les 2 ans, et indispensable pour ta sécurité.'},
+     {t:'Je repousse',fx:{money:-135,cat:'transport',joy:-4},ok:0,f:'Amende de 135 € pour défaut de contrôle technique !'}]},
+  {e:'⚖️',t:'Le prix au kilo',cond:G=>G.age>=18,q:'Pâtes : paquet de 500 g à 1,20 € ou paquet de 1 kg à 1,90 € ?',o:[
+     {t:'Le paquet de 1 kg',fx:{money:-2,cat:'courses'},ok:1,f:'1,90 €/kg au lieu de 2,40 €/kg : regarde toujours l’étiquette « prix au kilo » !'},
+     {t:'Le petit paquet, c’est moins cher',fx:{money:-1,cat:'courses'},ok:0,f:'Moins cher en apparence… mais 26 % plus cher au kilo !'}]},
+  {e:'🥫',t:'Promo « 3 pour 2 »',cond:G=>G.age>=18,q:'Yaourts : 3 packs pour le prix de 2. Mais tu en manges peu…',o:[
+     {t:'Je prends les 3 packs',fx:{money:-6,cat:'courses'},ok:0,f:'Si tu en jettes la moitié, ce n’est plus une promo !'},
+     {t:'Je prends un seul pack',fx:{money:-3,cat:'courses'},ok:1,f:'Une promo n’est intéressante que si tu aurais acheté de toute façon.'}]},
+  {e:'🗑️',t:'Le frigo oublié',cond:G=>G.age>=18,q:'En rangeant, tu dois jeter 20 € de nourriture périmée.',o:[
+     {t:'Je planifie mes repas de la semaine',fx:{money:-20,cat:'courses'},ok:1,f:'Planifier ses repas réduit le gaspillage… et les dépenses.'},
+     {t:'Tant pis',fx:{money:-20,cat:'courses',joy:-2},ok:0,f:'Le gaspillage, c’est de l’argent jeté à la poubelle.'}]},
+  {e:'📱',t:'Comparer son forfait',cond:G=>G.age>=18,q:'Tu paies 25 €/mois de forfait. Un autre opérateur propose la même chose à 10 €.',o:[
+     {t:'Je change',fx:{money:15},ok:1,f:'15 € de plus chaque mois = 180 € par an, en 10 minutes !'},
+     {t:'Trop compliqué',ok:0,f:'Changer d’opérateur est simple : le nouveau s’occupe de tout avec ton code RIO.'}]},
+  {e:'🏦',t:'Les frais bancaires',cond:G=>G.age>=18,q:'Ta banque prélève 9 € par mois de « frais de tenue de compte ».',o:[
+     {t:'Je négocie ou je change de banque',ok:1,f:'Une banque en ligne est souvent gratuite : 108 € économisés par an.'},
+     {t:'Je ne regarde pas',fx:{money:-9,cat:'factures'},ok:0,f:'Lis ton relevé : les frais cachés s’accumulent.'}]},
+  {e:'📊',t:'Mon budget du mois',cond:G=>G.age>=18,q:'Une appli te propose de ranger tes dépenses en catégories et de te fixer des limites.',o:[
+     {t:'Je fixe un budget par catégorie',fx:{joy:2},ok:1,f:'Fixer des limites (courses, sorties…) aide à tenir son budget sans y penser.'},
+     {t:'Pas besoin',ok:null,f:'Un budget écrit, c’est plus fiable que la mémoire.'}]},
+ ],
+ quiz:[
+  {lvl:1,q:'Épargner, c’est…',o:['Garder de l’argent pour plus tard','Tout dépenser','Emprunter'],a:0,f:'L’épargne, c’est ton coussin de sécurité 🐷'},
+  {lvl:1,q:'Une facture, c’est…',o:['Ce que tu dois payer pour un service','Un cadeau','Un billet de banque'],a:0,f:'Électricité, internet, téléphone… chaque service a sa facture.'},
+  {lvl:1,q:'Si tu dépenses plus que ce que tu gagnes…',o:['Tu t’endettes','Tu deviens riche','Il ne se passe rien'],a:0,f:'C’est la règle n°1 : dépenser moins que ce qu’on gagne.'},
+  {lvl:3,q:'Avec 2 % d’inflation par an, 1 000 € vaudront dans 10 ans environ…',o:['980 €','820 €','500 €'],a:1,f:'1 000 ÷ 1,02¹⁰ ≈ 820 € de pouvoir d’achat. L’argent qui dort perd de la valeur.'},
+  {lvl:3,q:'Un crédit de 10 000 € à 5 % sur 5 ans coûte environ en intérêts…',o:['130 €','1 300 €','5 000 €'],a:1,f:'Environ 1 320 € d’intérêts. Toujours regarder le coût total !'},
+  {lvl:3,q:'Le PEA permet, après 5 ans…',o:['De ne pas payer d’impôt sur les gains (hors prélèvements sociaux)','D’emprunter sans intérêt','De ne jamais perdre d’argent'],a:0,f:'Le PEA est une enveloppe fiscale avantageuse pour investir en actions européennes… mais le risque reste là.'},
+ ],
+ luck:[
+  {e:'👖',t:'Billet oublié',q:'En faisant une machine, tu retrouves un billet de 20 € dans la poche d’un vieux jean !',o:[{t:'Super !',fx:{money:20},ok:null,f:'Petite chance du jour 🍀'}]},
+  {e:'🎁',t:'Cadeau de mamie',q:'Mamie t’envoie 50 € pour t’encourager.',o:[
+    {t:'Je mets tout de côté',fx:{money:50,toSavings:50},ok:1,f:'Une rentrée d’argent imprévue, c’est le moment idéal pour épargner !'},
+    {t:'Je garde ça pour me faire plaisir',fx:{money:50,joy:2},ok:null,f:'C’est un cadeau, profites-en ! Tu aurais aussi pu en épargner une partie.'}]},
+  {e:'🏥',t:'Remboursement',q:'La Sécurité sociale te rembourse ta visite chez le médecin.',o:[{t:'Bonne nouvelle',fx:{money:18},ok:null,f:'En France, la Sécu rembourse une grande partie des soins. Ta mutuelle complète le reste.'}]},
+  {e:'📸',t:'Concours photo',q:'Ta photo du coucher de soleil gagne un concours local !',o:[{t:'Génial !',fx:{money:80,joy:4},ok:null,f:'Tes talents peuvent aussi te rapporter de l’argent 🌅'}]},
+  {e:'📦',t:'Vide-grenier en ligne',q:'Tu vends des affaires que tu n’utilises plus.',o:[{t:'Vendu !',fx:{money:60},ok:1,f:'Vendre ce qui dort dans tes placards : bon pour ton budget et pour la planète ♻️'}]},
+ ],
+ event:[
+  {e:'📱',t:'Écran cassé',q:'Ton téléphone glisse de ta poche… écran fissuré ! Réparation : 120 €.',o:[
+    {t:'Je répare avec mon épargne',s:'C’est fait pour ça',fx:{pay:120,cat:'imprevus'},ok:1,f:'Exactement ! L’épargne de précaution sert à encaisser les coups durs sans stress.'},
+    {t:'Je garde l’écran cassé',fx:{joy:-5},ok:null,f:'Ça marche encore… mais attention aux doigts !'},
+    {t:'Je paye en 4 fois',fx:{money:-125,cat:'imprevus'},ok:0,f:'Payer en plusieurs fois coûte souvent un peu plus cher, et ça s’empile vite.'}]},
+  {e:'🚨',t:'Amende',q:'Contrôle dans le bus : tu as oublié de valider ton ticket. Amende : 50 €.',o:[{t:'Je paye… 😤',fx:{money:-50,cat:'imprevus',joy:-3},ok:0,f:'Valider son ticket coûte toujours moins cher qu’une amende !'}]},
+  {e:'🤒',t:'Grosse grippe',q:'Tu es malade. Médecin + pharmacie : 35 €, en partie remboursés plus tard.',o:[{t:'Je me soigne',fx:{money:-12,cat:'imprevus',joy:-3},ok:1,f:'Grâce à la Sécu et à la mutuelle, il ne reste que 12 € à ta charge.'}]},
+  {e:'🧥',t:'Manteau déchiré',q:'L’hiver arrive et ton manteau est déchiré.',o:[
+    {t:'Manteau neuf de marque',fx:{money:-140,cat:'achats',joy:3},ok:null,f:'Joli, mais cher !'},
+    {t:'Friperie',fx:{money:-35,cat:'achats',joy:2},ok:1,f:'Malin : style unique et petit prix ♻️'},
+    {t:'Je le fais réparer',fx:{money:-15,cat:'achats'},ok:1,f:'Réparer, c’est souvent le meilleur rapport qualité-prix.'}]},
+  {e:'🔑',t:'Clés perdues',q:'Tu as perdu tes clés ! Le serrurier demande 90 €.',o:[
+    {t:'J’appelle le serrurier',fx:{pay:90,cat:'imprevus',joy:-2},ok:null,f:'Aïe. Une astuce : laisser un double chez quelqu’un de confiance.'},
+    {t:'Je récupère le double chez mes parents',fx:{joy:-1},ok:1,f:'Bien joué d’avoir un double !'}]},
+ ],
+ sortie:[
+  {e:'🎬',t:'Ciné entre amis',q:'Tes amis vont voir le nouveau film au cinéma (12 €).',o:[
+    {t:'J’y vais !',fx:{money:-12,cat:'loisirs',joy:5},ok:null,f:'Un bon moment entre amis 🍿'},
+    {t:'Soirée film à la maison',fx:{money:-3,cat:'loisirs',joy:4},ok:1,f:'Presque aussi fun, beaucoup moins cher !'}]},
+  {e:'🍔',t:'Samedi midi',q:'Fast-food ou pique-nique au parc ?',o:[
+    {t:'Fast-food (15 €)',fx:{money:-15,cat:'loisirs',joy:3},ok:null,f:'Rapide et bon… mais ça chiffre vite chaque semaine.'},
+    {t:'Pique-nique maison (5 €)',fx:{money:-5,cat:'courses',joy:4},ok:1,f:'Soleil, amis et sandwiches : le combo gagnant ☀️'}]},
+  {e:'🎳',t:'Bowling',q:'Soirée bowling avec les copains : 22 €.',o:[
+    {t:'Strike ! J’y vais',fx:{money:-22,cat:'loisirs',joy:6},ok:null,f:'Se faire plaisir, c’est important aussi 🎳'},
+    {t:'Balade gratuite à la place',fx:{joy:3},ok:1,f:'Les meilleures sorties sont parfois gratuites.'}]},
+  {e:'🎤',t:'Concert',q:'Ton artiste préféré passe en ville ! Place : 55 €.',o:[
+    {t:'J’y vais, c’est unique !',fx:{money:-55,cat:'loisirs',joy:10},ok:null,f:'Un souvenir inoubliable 🎶 Ça vaut le coup si c’était prévu dans ton budget.'},
+    {t:'Je regarde le live en ligne',fx:{joy:2},ok:null,f:'Moins magique… mais gratuit.'}]},
+  {e:'🏖️',t:'Journée au lac',q:'Il fait beau ! Tes amis vont au lac.',o:[
+    {t:'En train (25 €)',fx:{money:-25,cat:'loisirs',joy:7},ok:null,f:'Belle journée !'},
+    {t:'À vélo (gratuit)',fx:{joy:8},ok:1,f:'Sport + nature + 0 € 🚲'}]},
+ ],
+ mail:[
+  {e:'📺',t:'Abonnement oublié',q:'Sur ton relevé : 9,99 €/mois pour une appli que tu n’utilises plus depuis des mois !',o:[
+    {t:'Je résilie tout de suite',fx:{money:-10,cat:'factures'},ok:1,f:'Bravo ! Vérifier son relevé chaque mois évite ces petites fuites d’argent.'},
+    {t:'Bof, c’est pas grand-chose',fx:{money:-10,cat:'factures'},ok:0,f:'10 € par mois, c’est 120 € par an… pour rien !'}]},
+  {e:'💳',t:'Pub : « Crédit facile »',q:'« Besoin d’argent ? 1 000 € en 5 minutes, sans justificatif ! »',o:[
+    {t:'Je jette la pub',ok:1,f:'Ces crédits ont souvent des taux très élevés (jusqu’à 20 %). À éviter !'},
+    {t:'Je garde le numéro, au cas où…',ok:0,f:'Un crédit facile est rarement un bon plan. Mieux vaut une épargne de précaution.'}]},
+  {e:'💌',t:'Carte d’anniversaire',q:'Ton parrain t’envoie une carte avec 30 €.',o:[{t:'Merci parrain !',fx:{money:30,joy:3},ok:null,f:'Pense à lui envoyer un petit message 💌'}]},
+  {e:'💧',t:'Facture d’eau',q:'La facture d’eau du trimestre arrive : 28 €.',o:[{t:'Je paye',fx:{money:-28,cat:'factures'},ok:null,f:'Astuce : une douche de 5 minutes au lieu de 15, c’est des dizaines d’euros économisés par an 🚿'}]},
+  {e:'🎣',t:'SMS suspect',q:'« Votre colis est bloqué. Payez 1,99 € ici : bit.ly/… »',o:[
+    {t:'Je supprime le message',ok:1,f:'C’est de l’hameçonnage ! Ne clique jamais sur ce genre de lien.'},
+    {t:'Je paye, c’est que 1,99 €',fx:{money:-400,cat:'imprevus',joy:-8},ok:0,f:'Aïe ! Les escrocs ont récupéré ta carte et dépensé 400 €. Fais opposition tout de suite !'}]},
+ ],
+};
+
+/* =========================================================
+   LES 5 PARCOURS
+   ========================================================= */
+const baseFixed=(mult=1)=>{
+  const f=[{d:3,ic:'🏠',t:'Loyer',a:-Math.round(G.rent*mult),cat:'logement'},
+    {d:7,ic:'⚡',t:'Électricité',a:-50,cat:'factures'},{d:9,ic:'📱',t:'Forfait téléphone',a:-15,cat:'factures'},
+    {d:12,ic:'🌐',t:'Internet',a:-30,cat:'factures'},{d:21,ic:'🛡️',t:'Assurance habitation',a:-12,cat:'factures'}];
+  if(G.transport&&G.transport.a)f.push({d:14,ic:G.transport.ic,t:G.transport.t,a:-G.transport.a,cat:'transport'});
+  const subs=G.subs.reduce((a,s)=>a+s.a,0);if(subs)f.push({d:16,ic:'📺',t:'Abonnements',a:-subs,cat:'factures'});
+  return[...f,...groceries(Math.round(60*mult))];
+};
+const groceries=a=>[6,13,20,27].map(d=>({d,ic:'🛒',t:'Courses de la semaine',a:-a,cat:'courses'}));
+const BASE=[
+{key:'work',lot:'work',t:'Mon premier emploi',ic:'💼',place:'Bureau',col:'#3F3FD4',age:18,y:2026,m:8,goal:150,
+ desc:'Ton premier vrai travail ! Attention : ton salaire n’arrive qu’à la FIN du mois. Tiendras-tu jusque-là ?',
+ intro:{e:'💼',t:'Ton premier emploi',q:'Tu as 18 ans et tu vis encore chez tes parents. Tu as 300 € de côté grâce à ton job d’été. Quel premier emploi choisis-tu ?',o:[
+   {t:'Vendeur·se en boulangerie',s:'1 450 €/mois · réveil à 5 h 😴',fx:{job:{n:'Boulangerie',sal:1450,f:1},joy:-3},ok:null,f:'Bon salaire pour débuter, mais il faudra se lever tôt !'},
+   {t:'Vendeur·se en magasin de sport',s:'1 400 €/mois · travail le samedi',fx:{job:{n:'Magasin de sport',sal:1400,f:1}},ok:null,f:'Un job dynamique, avec des réductions sur le matériel !'},
+   {t:'Alternance dans un studio de jeux vidéo',s:'1 050 €/mois · tu apprends un métier',fx:{job:{n:'Studio de jeux vidéo',sal:1050,f:1.15},joy:4},ok:1,f:'Moins payé aujourd’hui… mais ton salaire grimpera plus vite ensuite. C’est un investissement sur toi-même !'}]},
+ fixed:()=>[{d:5,ic:'🏡',t:'Participation à la maison',a:-100,cat:'logement'},{d:9,ic:'📱',t:'Forfait téléphone',a:-15,cat:'factures'},{d:13,ic:PM().ic,t:PM().trn,a:-Math.round(30*PM().tr),cat:'transport'}],
+ deck:{
+  choice:[
+   {e:'📝',t:'Le contrat de travail',q:'Ton patron te tend ton contrat. « Signe ici ! »',o:[
+     {t:'Je le lis en entier avant de signer',ok:1,f:'Toujours lire avant de signer : salaire, horaires, période d’essai…'},
+     {t:'Je signe vite pour faire bonne impression',ok:0,f:'Signer sans lire, c’est risqué. Un contrat t’engage !'}]},
+   {e:'🏦',t:'Ton compte en banque',q:'Il te faut un compte pour recevoir ton salaire.',o:[
+     {t:'Banque en ligne gratuite',ok:1,f:'Bien vu ! Les frais bancaires peuvent coûter plus de 100 € par an ailleurs.'},
+     {t:'Carte premium à 15 €/mois',s:'Elle est jolie…',fx:{money:-15,cat:'factures'},ok:0,f:'180 € par an pour une carte… Est-ce vraiment utile ?'}]},
+   {e:'🍱',t:'La pause déjeuner',q:'Midi ! Tes collègues vont au restaurant.',o:[
+     {t:'Resto avec eux (14 €)',fx:{money:-14,cat:'loisirs',joy:3},ok:null,f:'Sympa pour l’ambiance… mais tous les jours, ça fait 300 € par mois !'},
+     {t:'Ma gamelle préparée la veille',fx:{money:-3,cat:'courses',joy:1},ok:1,f:'La gamelle peut faire économiser plus de 200 € par mois 🥗'}]},
+   {e:'🍻',t:'L’afterwork',q:'Vendredi soir, toute l’équipe se retrouve au café.',o:[
+     {t:'J’y vais et je paye ma tournée',fx:{money:-25,cat:'loisirs',joy:6},ok:null,f:'Créer des liens avec ses collègues, c’est important… mais 25 €, ça pique.'},
+     {t:'J’y vais avec juste un soda',fx:{money:-4,cat:'loisirs',joy:5},ok:1,f:'Le bon équilibre : tu es là, et ton budget aussi 😉'},
+     {t:'Je rentre chez moi',fx:{joy:-2},ok:null,f:'Pas grave, mais c’est bien de participer de temps en temps.'}]},
+   {e:'⏰',t:'Réveil raté',q:'Panne de réveil ! Tu vas être en retard pour la 2e fois.',o:[
+     {t:'Je prends un taxi (25 €)',fx:{money:-25,cat:'transport'},ok:null,f:'À l’heure, mais cher !'},
+     {t:'Je préviens mon manager et j’arrive en retard',fx:{joy:-2},ok:1,f:'Prévenir, c’est respecter son équipe. C’est apprécié !'},
+     {t:'Je ne dis rien',fx:{joy:-6},ok:0,f:'Ton manager n’a pas apprécié… Attention pendant la période d’essai !'}]},
+   {e:'🐷',t:'Épargne automatique',q:'Ta banque te propose de virer automatiquement de l’argent vers ton livret chaque mois, le jour de ta paie.',o:[
+     {t:'Oui, 100 € chaque mois',fx:{autoSave:100},ok:1,f:'Se payer en premier : l’épargne part avant que tu puisses la dépenser 💪'},
+     {t:'Non, je verrai en fin de mois',ok:0,f:'En fin de mois, il reste souvent… rien 😅'}]},
+  ],
+  quiz:[
+   {q:'Sur ta fiche de paie, l’argent que tu reçois vraiment s’appelle…',o:['Le salaire brut','Le salaire net','Le salaire total'],a:1,f:'Brut − cotisations = net. C’est le net qui arrive sur ton compte.'},
+   {q:'Les cotisations prélevées sur ton salaire servent à payer…',o:['La santé, le chômage et la retraite','Le cadeau de ton patron','Rien du tout'],a:0,f:'Ce sont elles qui financent l’hôpital, ta future retraite…'},
+   {q:'Une période d’essai, c’est…',o:['Des vacances','Un temps pour voir si le poste te convient (et à ton patron aussi)','Une prime'],a:1,f:'Pendant cette période, chacun peut arrêter le contrat facilement.'},
+   {q:'Tu gagnes 1 450 € et tu épargnes 10 %. Ça fait…',o:['14,50 €','145 €','1 450 €'],a:1,f:'10 % de 1 450 € = 145 €. Petit à petit, ça devient beaucoup !'},
+  ],
+  shop:[
+   {e:'👟',t:'Chaussures de travail',q:'Tu restes debout toute la journée et tes baskets sont usées.',o:[
+     {t:'Bonnes chaussures confortables (70 €)',fx:{money:-70,cat:'achats',joy:2},ok:1,f:'Un achat utile pour ton travail = un bon achat.'},
+     {t:'Le modèle à la mode (180 €)',fx:{money:-180,cat:'achats',joy:5},ok:null,f:'Stylé… mais ton salaire n’est pas encore arrivé !'},
+     {t:'Je garde les vieilles',fx:{joy:-3},ok:null,f:'Aïe, tes pieds…'}]},
+   {e:'📱',t:'Le nouveau smartphone',q:'Ton premier salaire arrive bientôt… et un smartphone à 900 € te fait de l’œil.',o:[
+     {t:'J’attends et j’économise',ok:1,f:'Attendre, c’est souvent la meilleure décision. L’envie passe parfois toute seule !'},
+     {t:'Reconditionné à 300 €',fx:{money:-300,cat:'achats',joy:4},ok:1,f:'Comme neuf, 3 fois moins cher, et meilleur pour la planète.'},
+     {t:'Je le prends en 4 fois',fx:{money:-230,cat:'achats',joy:6},ok:0,f:'Payer en plusieurs fois, c’est quand même payer… avant même d’avoir touché ton salaire !'}]},
+   {e:'🎧',t:'Casque sans fil',q:'Un casque à 80 € pour écouter de la musique dans le bus.',o:[
+     {t:'Je l’achète',fx:{money:-80,cat:'achats',joy:4},ok:null,f:'Bonne musique 🎵'},
+     {t:'Je l’ajoute à ma liste d’envies',ok:1,f:'La liste d’envies : si tu en as encore envie dans 1 mois, c’est un vrai besoin d’envie !'}]},
+  ]}},
+{key:'home',lot:'home',t:'Mon premier logement',ic:'🏠',place:'Résidence',col:'#2F86D8',age:20,y:2028,m:9,goal:100,base:1700,
+ desc:'Tu quittes le nid ! Loyer, caution, factures, assurance… Voyons comment tu t’en sors.',
+ intro:()=>{const r=[420,560,780].map(x=>Math.round(x*PM().rent/10)*10),pl=G.persona&&G.persona.place;return{e:'🔑',t:'Ton premier appart',q:'Tu as 20 ans et tu quittes le domicile de tes parents. Où vas-tu habiter ?'+(pl==='city'?' (En grande ville, les loyers sont plus chers !)':pl==='country'?' (À la campagne, les loyers sont moins chers.)':''),o:[
+   {t:'Colocation à 3',s:`${fmt(r[0])}/mois · ambiance garantie`,fx:{rent:r[0],joy:3},ok:1,f:'Loyer léger et vie sociale ! Ton budget te dit merci.'},
+   {t:pl==='country'?'Petite maison au village':'Studio en centre-ville',s:`${fmt(r[1])}/mois`,fx:{rent:r[1]},ok:null,f:'Ton petit chez-toi, rien qu’à toi.'},
+   {t:'Grand T2 avec balcon',s:`${fmt(r[2])}/mois`,fx:{rent:r[2],joy:4},ok:0,f:'Très agréable… mais près de la moitié de ton salaire part dans le loyer !'}]}},
+ fixed:()=>[{d:1,ic:'🔐',t:'Dépôt de garantie',a:-G.rent,cat:'logement'},{d:5,ic:'🏠',t:'Loyer',a:-G.rent,cat:'logement'},
+   {d:8,ic:'🛡️',t:'Assurance habitation',a:-12,cat:'factures'},{d:11,ic:'⚡',t:'Électricité',a:-45,cat:'factures'},
+   {d:15,ic:'🌐',t:'Internet',a:-30,cat:'factures'},{d:18,ic:'📱',t:'Forfait téléphone',a:-15,cat:'factures'},
+   {d:20,ic:PM().ic,t:PM().trn,a:-Math.round(38*PM().tr),cat:'transport'},{d:25,ic:'🤝',t:'APL (aide au logement)',a:G.rent>500?110:80,cat:'revenu'},...groceries(55)],
+ deck:{
+  choice:[
+   {e:'🛋️',t:'Meubler l’appart',q:'Ton logement est vide ! Il te faut un lit, une table, des chaises…',o:[
+     {t:'Tout neuf en magasin (900 €)',fx:{money:-900,cat:'achats',joy:6},ok:0,f:'Très joli… mais ça plombe ton budget dès le premier mois.'},
+     {t:'Occasion + récup’ (200 €)',fx:{money:-200,cat:'achats',joy:4},ok:1,f:'Les sites d’occasion et la famille, c’est la base pour un premier appart !'},
+     {t:'Un matelas par terre pour l’instant (60 €)',fx:{money:-60,cat:'achats',joy:-2},ok:null,f:'Économique… on complètera petit à petit.'}]},
+   {e:'📋',t:'L’état des lieux',q:'Le propriétaire te fait visiter avant de te donner les clés.',o:[
+     {t:'Je note et je photographie chaque défaut',ok:1,f:'Parfait ! Sinon il pourrait garder ta caution quand tu partiras.'},
+     {t:'Je signe sans regarder',ok:0,f:'Risqué : la tache sur la moquette pourrait t’être reprochée plus tard !'}]},
+   {e:'🛒',t:'Le premier plein de courses',q:'Le frigo est vide. Direction le supermarché !',o:[
+     {t:'J’ai fait une liste et je m’y tiens',fx:{money:-65,cat:'courses'},ok:1,f:'Avec une liste, on dépense en moyenne 20 % de moins.'},
+     {t:'Je prends ce qui me fait envie',fx:{money:-135,cat:'courses',joy:3},ok:0,f:'Le ventre vide et sans liste, le caddie se remplit tout seul !'},
+     {t:'Que des plats tout prêts',fx:{money:-110,cat:'courses'},ok:null,f:'Pratique, mais cher et pas toujours équilibré.'}]},
+   {e:'🌡️',t:'Il fait froid',q:'Les premières fraîcheurs arrivent dans ton appart…',o:[
+     {t:'Chauffage à fond, à 24 °C',fx:{money:-35,cat:'factures',joy:2},ok:0,f:'Chaque degré en plus = environ 7 % de facture en plus !'},
+     {t:'19 °C et un bon pull',ok:1,f:'19 °C, c’est la température conseillée. Ton porte-monnaie et la planète disent merci 🧶'}]},
+   {e:'🔊',t:'Voisin bruyant',q:'Ton voisin met la musique fort tous les soirs.',o:[
+     {t:'Je vais lui parler poliment',fx:{joy:3},ok:1,f:'La plupart du temps, une discussion calme règle le problème.'},
+     {t:'Je tape au mur',fx:{joy:-4},ok:0,f:'L’ambiance devient tendue dans l’immeuble…'},
+     {t:'Bouchons d’oreilles (5 €)',fx:{money:-5,cat:'achats'},ok:null,f:'Ça marche… mais le problème reste.'}]},
+  ],
+  quiz:[
+   {q:'Le dépôt de garantie (la caution), c’est…',o:['Un cadeau au propriétaire','Une somme qu’on te rend en partant si tout est en bon état','Un impôt'],a:1,f:'C’est pour ça que l’état des lieux est si important !'},
+   {q:'L’APL, c’est…',o:['Une aide de l’État pour payer ton loyer','Une assurance','Une appli de musique'],a:0,f:'Selon tes revenus, la CAF peut t’aider à payer ton loyer.'},
+   {q:'Ton loyer ne devrait pas dépasser… de tes revenus.',o:['Un tiers','La moitié','Les trois quarts'],a:0,f:'Au-delà, il ne reste plus assez pour vivre et épargner.'},
+   {q:'Quand on est locataire, l’assurance habitation est…',o:['Obligatoire','Interdite','Inutile'],a:0,f:'Elle te protège en cas de dégât des eaux, d’incendie…'},
+  ],
+  shop:[
+   {e:'📺',t:'Grande télé',q:'Une télé géante à 600 € pour ton salon.',o:[
+     {t:'Je l’achète',fx:{money:-600,cat:'achats',joy:6},ok:0,f:'Le premier mois dans un logement est déjà très cher… Était-ce le bon moment ?'},
+     {t:'Mon ordi fera l’affaire',ok:1,f:'Sage décision ! Tu pourras l’acheter plus tard, en ayant économisé.'}]},
+   {e:'🪴',t:'Un peu de déco',q:'Ton appart manque de couleurs.',o:[
+     {t:'Déco en magasin (60 €)',fx:{money:-60,cat:'achats',joy:4},ok:null,f:'C’est plus joli !'},
+     {t:'Plantes et DIY (12 €)',fx:{money:-12,cat:'achats',joy:5},ok:1,f:'Fait maison = petit prix et grande fierté 🌱'}]},
+   {e:'🍳',t:'Casseroles et poêles',q:'Pour cuisiner, il te faut du matériel (60 €).',o:[
+     {t:'J’achète le kit de base',fx:{money:-60,cat:'achats'},ok:1,f:'Un bon investissement : cuisiner soi-même coûte bien moins cher que commander !'},
+     {t:'Je commanderai à manger',fx:{money:-90,cat:'courses',joy:2},ok:0,f:'La livraison tous les soirs, c’est un gouffre pour le budget.'}]},
+  ]}},
+{key:'daily',lot:'daily',t:'Mon quotidien',ic:'🛒',place:'Marché',col:'#1E9E86',age:22,y:2030,m:10,goal:200,base:1900,
+ desc:'Courses, abonnements, transports, sorties… Les petites dépenses de tous les jours font les grandes différences !',
+ intro:()=>({e:'🚲',t:'Aller au travail',q:'Tu as 22 ans et un nouveau travail un peu plus loin. Comment y vas-tu chaque jour ?',o:[
+   {t:'À vélo',s:'Gratuit · bon pour la santé',fx:{transport:{t:'Entretien vélo',ic:'🚲',a:5},joy:3},ok:1,f:'Le moyen le plus économique (et sportif) !'},
+   {t:G.persona&&G.persona.place==='country'?'En covoiturage':'En transports en commun',s:`${fmt(Math.round(38*PM().tr))}/mois`+(G.persona&&G.persona.place==='country'?' (peu de bus à la campagne)':' (ton employeur paie la moitié)'),fx:{transport:{t:PM().trn,ic:PM().ic,a:Math.round(38*PM().tr)}},ok:1,f:G.persona&&G.persona.place==='country'?'À la campagne, partager la voiture permet de diviser les frais d’essence.':'Bon à savoir : ton employeur doit rembourser 50 % de ton abonnement.'},
+   {t:'En scooter',s:'95 €/mois (essence + assurance)',fx:{transport:{t:'Scooter (essence + assurance)',ic:'🛵',a:95},joy:2},ok:null,f:'Pratique et rapide, mais c’est le plus cher.'}]}),
+ fixed:()=>baseFixed(1.03),
+ deck:{
+  choice:[
+   {e:'🛒',t:'Les courses de la semaine',q:'Au supermarché, deux paquets de pâtes côte à côte : une grande marque et la marque du magasin.',o:[
+     {t:'Grandes marques',fx:{money:-85,cat:'courses'},ok:null,f:'Tu paies surtout la pub et l’emballage !'},
+     {t:'Marques du magasin',fx:{money:-55,cat:'courses'},ok:1,f:'Souvent la même qualité, environ 30 % moins cher !'},
+     {t:'Drive avec une liste',fx:{money:-60,cat:'courses'},ok:1,f:'Pas de tentations dans les rayons : malin !'}]},
+   {e:'📺',t:'Mes abonnements',q:'Tu paies : streaming 14 €, musique 11 €, salle de sport 30 €… mais tu n’es pas allé·e au sport depuis 2 mois.',o:[
+     {t:'Je résilie la salle de sport',fx:{removeSub:'Salle de sport'},ok:1,f:'−30 € par mois, soit 360 € par an ! Tu peux courir dehors gratuitement 🏃'},
+     {t:'Je garde tout',ok:0,f:'Ces petites sommes qui partent chaque mois, ce sont des « fuites » dans ton budget.'},
+     {t:'Je résilie tout',fx:{removeSub:'all',joy:-3},ok:null,f:'Radical ! Tu économises 55 €/mois, mais tes séries vont te manquer.'}]},
+   {e:'🍕',t:'Flemme de cuisiner',q:'Il est 20 h, tu es fatigué·e. Une pizza livrée coûte 25 €.',o:[
+     {t:'Je commande',fx:{money:-25,cat:'loisirs',joy:3},ok:null,f:'De temps en temps, ça va. Tous les soirs, c’est 750 € par mois !'},
+     {t:'Pâtes maison (3 €)',fx:{money:-3,cat:'courses',joy:1},ok:1,f:'Simple, bon et économique 🍝'},
+     {t:'J’ai cuisiné en avance dimanche',fx:{money:-4,cat:'courses',joy:3},ok:1,f:'Le « batch cooking » : on cuisine 1 fois pour toute la semaine. Pro !'}]},
+   {e:'🏷️',t:'Les soldes',q:'−50 % sur un manteau à 200 € ! Mais tu en as déjà un qui va très bien.',o:[
+     {t:'C’est une affaire, je prends !',fx:{money:-100,cat:'achats',joy:3},ok:0,f:'Une promo sur un truc dont on n’a pas besoin, c’est 100 % de dépense en trop !'},
+     {t:'Je n’en ai pas besoin',ok:1,f:'Bravo ! Le meilleur achat, c’est parfois celui qu’on ne fait pas.'}]},
+   {e:'🎂',t:'Anniversaire d’un ami',q:'C’est l’anniversaire de ton meilleur ami samedi.',o:[
+     {t:'Cadeau commun avec les autres (15 €)',fx:{money:-15,cat:'loisirs',joy:5},ok:1,f:'À plusieurs, on offre un plus beau cadeau pour moins cher 🎁'},
+     {t:'Gros cadeau tout seul (70 €)',fx:{money:-70,cat:'loisirs',joy:5},ok:null,f:'Généreux ! Ton ami est ravi.'},
+     {t:'Rien du tout',fx:{joy:-5},ok:0,f:'Ton ami est un peu déçu…'}]},
+   {e:'📊',t:'Où part mon argent ?',q:'Tu as l’impression que ton argent disparaît tout seul.',o:[
+     {t:'J’installe une appli de budget',fx:{joy:2},ok:1,f:'Noter ses dépenses, c’est LA base : on découvre souvent des surprises !'},
+     {t:'Je ne regarde pas, ça me stresse',fx:{joy:-2},ok:0,f:'Fermer les yeux ne fait pas disparaître les dépenses…'}]},
+  ],
+  quiz:[
+   {q:'Une dépense « fixe », c’est…',o:['Une dépense qui revient chaque mois (loyer, forfait…)','Une glace au chocolat','Un objet cassé'],a:0,f:'Les dépenses fixes, on les connaît à l’avance : c’est la base du budget.'},
+   {q:'Règle 50/30/20 : les 20 % servent…',o:['Aux loisirs','À l’épargne','Au loyer'],a:1,f:'50 % besoins, 30 % envies, 20 % épargne.'},
+   {q:'Un café à 3 € chaque jour de travail, ça fait par an environ…',o:['60 €','660 €','6 000 €'],a:1,f:'3 € × 220 jours = 660 € ! Les petites dépenses font les grandes sommes.'},
+   {q:'Comparer le « prix au kilo » sert à…',o:['Trouver le produit vraiment le moins cher','Faire du sport','Rien'],a:0,f:'Le gros paquet n’est pas toujours le moins cher au kilo !'},
+  ],
+  shop:[
+   {e:'👕',t:'Nouveaux vêtements',q:'Envie de renouveler ta garde-robe.',o:[
+     {t:'Grande enseigne (60 €)',fx:{money:-60,cat:'achats',joy:3},ok:null,f:'Sympa… mais vite usé.'},
+     {t:'Friperie (20 €)',fx:{money:-20,cat:'achats',joy:4},ok:1,f:'Style unique, petit prix ♻️'}]},
+   {e:'🎮',t:'Le jeu vidéo du moment',q:'Il sort aujourd’hui à 70 €.',o:[
+     {t:'Je l’achète le jour de sa sortie',fx:{money:-70,cat:'loisirs',joy:6},ok:null,f:'Le plaisir tout de suite !'},
+     {t:'D’occasion dans 2 mois (30 €)',ok:1,f:'La patience paie : les prix baissent vite.'}]},
+   {e:'☕',t:'Machine à café',q:'Tu achètes un café à emporter (3 €) chaque matin. Une machine coûte 60 €.',o:[
+     {t:'J’achète la machine',fx:{money:-60,cat:'achats',joy:2},ok:1,f:'Rentabilisée en moins d’un mois ! Ça, c’est un bon achat.'},
+     {t:'Je continue au café d’en bas',fx:{money:-30,cat:'loisirs',joy:2},ok:null,f:'Sympa, mais ça fait 60 € par mois.'}]},
+  ]}},
+{key:'big',lot:'big',t:'Mes premiers grands achats',ic:'🚗',place:'Centre commercial',col:'#E2643A',age:25,y:2033,m:11,goal:250,base:2200,
+ desc:'Voiture, meubles, ordinateur, vacances… Les gros achats se préparent. Crédit ou épargne ?',
+ intro:{e:'🎄',t:'Le mois des grosses dépenses',q:'Tu as 25 ans. C’est décembre : Noël approche, ta vieille voiture prêtée par tes parents rend l’âme, et ton ordinateur rame… Prêt·e ?',o:[{t:'C’est parti !',ok:null,f:'Rappel : un grand achat se prépare. Compare, négocie, et évite les crédits chers !'}]},
+ fixed:()=>[...baseFixed(1.06),{d:19,ic:'🎁',t:'Prime de fin d’année',a:400,cat:'revenu'}],
+ deck:{
+  choice:[
+   {e:'🚗',t:'Il te faut une voiture',q:'Ton travail est loin, tu as besoin d’une voiture. Que choisis-tu ?',o:[
+     {t:'Neuve, à crédit (25 000 €)',s:'380 €/mois pendant 6 ans',fx:{money:-380,cat:'transport',car:{n:'Voiture neuve',value:20000,costs:[['Crédit auto',380],['Assurance auto',90],['Essence',80]]},joy:6},ok:0,f:'Une voiture neuve perd 20 % de sa valeur dès la 1re année… et ce crédit va peser chaque mois !'},
+     {t:'Occasion fiable (6 000 €)',s:'payée avec l’épargne',need:6000,fx:{pay:6000,cat:'transport',car:{n:'Voiture d’occasion',value:6000,costs:[['Assurance auto',50],['Essence',80]]},joy:3},ok:1,f:'Le choix malin : pas de crédit, et une voiture qui a déjà perdu sa plus grosse décote.'},
+     {t:'Location (LOA)',s:'260 €/mois',fx:{money:-260,cat:'transport',car:{n:'Voiture en location',value:0,costs:[['Location auto (LOA)',260],['Assurance auto',70],['Essence',80]]},joy:4},ok:null,f:'Pratique, mais la voiture ne t’appartient pas : tu paies chaque mois sans jamais l’avoir à toi.'},
+     {t:'Vélo électrique + covoiturage (1 200 €)',need:1200,fx:{pay:1200,cat:'transport',car:{n:'Vélo électrique',value:900,costs:[['Entretien vélo',10]]},joy:4},ok:1,f:'Économique et écolo ! Mais il faut s’organiser.'}]},
+   {e:'💻',t:'Nouvel ordinateur',q:'Ton ordi a 8 ans et ne démarre plus qu’une fois sur deux.',o:[
+     {t:'Le premier modèle trouvé (1 200 €)',fx:{money:-1200,cat:'achats',joy:4},ok:0,f:'Sans comparer, on paie souvent beaucoup trop cher.'},
+     {t:'Comparateur + reconditionné (650 €)',fx:{money:-650,cat:'achats',joy:4},ok:1,f:'Même performance, moitié prix. Bravo !'},
+     {t:'En 4 fois (300 €/mois)',fx:{money:-300,cat:'achats',joy:4,debt:{t:'Paiement en 4 fois (ordinateur)',a:300}},ok:0,f:'Attention : tu devras encore payer 300 € les mois suivants. Les paiements fractionnés s’accumulent vite !'}]},
+   {e:'🛡️',t:'Extension de garantie',q:'Le vendeur insiste : « Pour 149 €, votre achat est garanti 3 ans ! »',o:[
+     {t:'Non merci',ok:1,f:'En France, la garantie légale protège déjà tes achats neufs pendant 2 ans, gratuitement !'},
+     {t:'D’accord, on ne sait jamais',fx:{money:-149,cat:'achats'},ok:0,f:'Ces extensions rapportent surtout… au magasin.'}]},
+   {e:'✈️',t:'Les vacances',q:'Tes amis organisent un voyage au soleil en février : 800 €.',o:[
+     {t:'Je paye avec l’argent mis de côté',need:800,fx:{pay:800,cat:'loisirs',joy:12},ok:1,f:'Tu avais anticipé : profite à fond, sans dette ! ☀️'},
+     {t:'Crédit vacances',fx:{money:-80,cat:'loisirs',joy:10,debt:{t:'Crédit vacances',a:80}},ok:0,f:'S’endetter pour des vacances, c’est payer ses souvenirs pendant des mois…'},
+     {t:'Un week-end moins cher (150 €)',fx:{money:-150,cat:'loisirs',joy:7},ok:1,f:'Le plaisir sans se ruiner 👍'}]},
+   {e:'🤝',t:'Négocier',q:'Tu veux un canapé à 900 €. Le vendeur a l’air sympa…',o:[
+     {t:'Je demande poliment une remise',fx:{money:-760,cat:'achats',joy:5},ok:1,f:'−140 € juste en demandant ! Ça ne coûte rien d’essayer.'},
+     {t:'Je paye le prix affiché',fx:{money:-900,cat:'achats',joy:5},ok:null,f:'Pas de souci, mais tu aurais peut-être pu négocier.'},
+     {t:'Canapé d’occasion (250 €)',fx:{money:-250,cat:'achats',joy:4},ok:1,f:'Malin !'}]},
+  ],
+  quiz:[
+   {q:'Une voiture neuve perd environ… de sa valeur la 1re année.',o:['2 %','20 %','80 %'],a:1,f:'C’est la « décote ». Une occasion récente évite cette grosse perte.'},
+   {q:'Le TAEG d’un crédit, c’est…',o:['Le coût total du crédit, en %','Le prix de la voiture','Une marque de voiture'],a:0,f:'Plus le TAEG est élevé, plus le crédit coûte cher. Compare-le toujours !'},
+   {q:'La garantie légale sur un produit neuf dure…',o:['2 mois','2 ans','20 ans'],a:1,f:'2 ans, gratuitement, pour tous les produits neufs achetés en France.'},
+   {q:'La meilleure façon de financer un gros achat ?',o:['Un crédit à la consommation','L’épargne mise de côté avant','La chance'],a:1,f:'Épargner avant, c’est zéro intérêt à payer et zéro stress.'},
+  ],
+  shop:[
+   {e:'📱',t:'Smartphone dernier cri',q:'Le nouveau modèle sort : 1 300 €.',o:[
+     {t:'Je le veux !',fx:{money:-1300,cat:'achats',joy:5},ok:0,f:'Le modèle de l’an dernier fait la même chose pour moitié prix…'},
+     {t:'Reconditionné (420 €)',fx:{money:-420,cat:'achats',joy:4},ok:1,f:'Bon plan !'},
+     {t:'Je garde le mien',ok:1,f:'S’il marche bien, pourquoi changer ?'}]},
+   {e:'🎄',t:'Cadeaux de Noël',q:'Toute la famille sera là pour Noël !',o:[
+     {t:'Budget de 100 € pour tout le monde',fx:{money:-100,cat:'loisirs',joy:6},ok:1,f:'Fixer un budget avant d’aller dans les magasins : la règle d’or des fêtes.'},
+     {t:'Sans compter, c’est Noël !',fx:{money:-450,cat:'loisirs',joy:8},ok:0,f:'Janvier risque d’être difficile…'}]},
+   {e:'🛏️',t:'Nouveau matelas',q:'Ton dos te fait mal le matin.',o:[
+     {t:'Un bon matelas (400 €)',fx:{money:-400,cat:'achats',joy:6},ok:1,f:'Bien dormir, c’est important : un achat utile pour ta santé.'},
+     {t:'Je verrai plus tard',fx:{joy:-4},ok:null,f:'Ton dos n’est pas d’accord…'}]},
+  ]}},
+{key:'future',lot:'future',t:'Mon avenir financier',ic:'📈',place:'Banque',col:'#8B5CF6',age:28,y:2036,m:0,goal:400,base:2600,
+ desc:'Livret, bourse, retraite, arnaques… Fais travailler ton argent pour construire ton avenir.',
+ intro:{e:'🌱',t:'Ton grand projet',q:'Tu as 28 ans. Il est temps de penser à l’avenir. Quel est ton grand projet ?',o:[
+   {t:'Acheter mon appartement',ok:null,fx:{goalTxt:'l’apport de ton appartement'},f:'Il te faudra un apport d’environ 10 % du prix. Chaque mois compte !'},
+   {t:'Faire le tour du monde',ok:null,fx:{goalTxt:'ton tour du monde'},f:'Un rêve qui se prépare avec un budget précis.'},
+   {t:'Être libre plus tard',ok:null,fx:{goalTxt:'ta liberté financière'},f:'Investir tôt, c’est le secret des intérêts composés.'}]},
+ fixed:()=>{const f=baseFixed(1.1);
+   if(G.car)G.car.costs.forEach(([t,a],i)=>f.push({d:[6,17,23][i]||24,ic:'🚗',t,a:-a,cat:'transport'}));
+   G.debts.forEach((d,i)=>f.push({d:10+i*2,ic:'💳',t:d.t,a:-d.a,cat:'achats'}));return f},
+ deck:{
+  choice:[
+   {e:'🐷',t:'Le Livret A',q:'Ton argent dort sur ton compte courant, où il ne rapporte rien.',o:[
+     {t:'J’ouvre un Livret A et j’y mets 300 €',fx:{toSavings:300},ok:1,f:'Le Livret A : sans risque, disponible à tout moment, et il rapporte des intérêts.'},
+     {t:'Je laisse tout sur le compte',ok:0,f:'Sur un compte courant, l’inflation grignote ton argent chaque année.'}]},
+   {e:'🌍',t:'Investir en bourse',q:'Un ETF « Monde » permet d’acheter un petit bout de plus de 1 000 entreprises d’un coup.',o:[
+     {t:'J’investis 200 € dans un ETF Monde',fx:{toInvest:200},ok:1,f:'Diversifié, peu de frais, long terme : la recette des investisseurs patients 🐢'},
+     {t:'Tout sur l’action à la mode',fx:{money:-200,cat:'autre'},ok:0,f:'La mode est passée, l’action a perdu 60 %… Ne mets jamais tous tes œufs dans le même panier !'},
+     {t:'Pas maintenant',ok:null,f:'Pas de souci. Mais plus tu commences tôt, plus le temps travaille pour toi.'}]},
+   {e:'📉',t:'Krach boursier !',q:'Les marchés chutent de 20 % en une semaine. Les infos parlent de crise…',pre:{investMul:.8},o:[
+     {t:'Je vends tout avant que ça empire',fx:G=>({money:Math.round(G.invest),wipeInvest:1}),ok:0,f:'Vendre en panique, c’est transformer une baisse passagère en vraie perte 😢'},
+     {t:'Je ne touche à rien',ok:1,f:'Sang-froid ! Sur le long terme, les marchés ont toujours fini par remonter.'},
+     {t:'J’en profite pour investir 100 €',fx:{toInvest:100},ok:1,f:'Acheter quand c’est « en soldes » : comme les pros 😎'}]},
+   {e:'🪙',t:'La crypto miracle',q:'Un ami : « Mets 500 € dans cette crypto, ça va faire ×10 en un mois, garanti ! »',o:[
+     {t:'Non merci',ok:1,f:'« Garanti » + « ×10 » = gros signal d’alarme 🚩'},
+     {t:'Allez, 500 € !',fx:{money:-500,cat:'autre',joy:-6},ok:0,f:'La crypto s’est effondrée en 3 jours. 500 € envolés…'}]},
+   {e:'🧓',t:'Penser à la retraite',q:'Ton entreprise propose un plan d’épargne : pour chaque euro que tu mets, elle ajoute 1 € !',o:[
+     {t:'J’y mets 100 €',fx:G=>({money:-100,cat:'autre',investAdd:200}),ok:1,f:'100 € qui deviennent 200 € tout de suite : c’est « l’abondement ». À ne jamais refuser !'},
+     {t:'Non, c’est trop loin',ok:0,f:'Tu laisses de l’argent gratuit sur la table…'}]},
+   {e:'📆',t:'Investir un peu chaque mois',q:'Plutôt que d’attendre « le bon moment », tu peux investir 100 € chaque mois, quoi qu’il arrive.',o:[
+     {t:'J’investis 100 € et je continue chaque mois',fx:{toInvest:100},ok:1,f:'C’est l’investissement programmé : tu achètes parfois cher, parfois pas cher, et le temps lisse tout.'},
+     {t:'J’attends que la bourse baisse',ok:0,f:'Personne ne sait prévoir la bourse. Attendre, c’est souvent rater la hausse.'}]},
+   {e:'💼',t:'Les frais cachés',q:'Ton banquier te propose un fonds « maison » avec 2,5 % de frais par an.',o:[
+     {t:'Je compare avec un ETF à 0,2 % de frais',ok:1,f:'Sur 30 ans, 2,3 % de frais en plus peuvent te coûter près de la moitié de tes gains !'},
+     {t:'J’accepte, il a l’air sûr de lui',fx:{toInvest:100},ok:0,f:'Les frais grignotent ton rendement chaque année, sans que tu le voies.'}]},
+   {e:'🔁',t:'Épargne automatique',q:'Et si tu programmais un virement automatique de 10 % de ton salaire le jour de la paie ?',o:[
+     {t:'Oui, 260 € par mois',fx:{autoSave:260},ok:1,f:'« Se payer en premier » : la meilleure habitude financière du monde.'},
+     {t:'Non, je préfère gérer à la main',ok:null,f:'Possible, mais il faut beaucoup de discipline !'}]},
+  ],
+  quiz:[
+   {q:'L’assurance-vie, c’est surtout…',o:['Un placement pour épargner et transmettre','Une assurance pour ta voiture','Un crédit'],a:0,f:'Malgré son nom, c’est une enveloppe d’épargne très utilisée en France, avantageuse après 8 ans.'},
+   {q:'Les intérêts composés, c’est…',o:['Gagner des intérêts sur tes intérêts','Un impôt','Une dette'],a:0,f:'C’est l’effet boule de neige : plus tu attends, plus ça grossit ☃️'},
+   {q:'Diversifier, c’est…',o:['Mettre tous ses œufs dans le même panier','Répartir son argent sur plusieurs placements','Tout dépenser'],a:1,f:'Si un placement baisse, les autres compensent.'},
+   {q:'À 7 % par an, ton argent double en environ…',o:['3 ans','10 ans','40 ans'],a:1,f:'La règle de 72 : 72 ÷ 7 ≈ 10 ans.'},
+   {q:'« Rendement énorme » + « sans risque », c’est…',o:['Une arnaque probable','Une bonne affaire','Un Livret A'],a:0,f:'Plus on te promet de gagner, plus le risque est grand. Toujours.'},
+  ],
+  shop:[
+   {e:'🎰',t:'Le loto',q:'Le super jackpot est à 100 millions ! Un ticket coûte 20 €.',o:[
+     {t:'Non merci',ok:1,f:'La chance de gagner est d’environ 1 sur 140 millions…'},
+     {t:'Je tente ma chance',fx:{money:-20,cat:'loisirs',joy:1},ok:0,f:'Perdu… comme presque tout le monde. Ces 20 € investis auraient rapporté à coup sûr.'}]},
+   {e:'⌚',t:'Montre de luxe',q:'Tes collègues ont tous une belle montre… celle-ci coûte 2 000 €.',o:[
+     {t:'Non, ce n’est pas ma priorité',ok:1,f:'Comparer son train de vie aux autres, c’est le piège n°1.'},
+     {t:'Je la veux',fx:{money:-2000,cat:'achats',joy:4},ok:0,f:'2 000 € investis à 7 % deviendraient 15 000 € dans 30 ans…'}]},
+   {e:'📚',t:'Une formation',q:'Une formation en ligne de 150 € pourrait t’aider à obtenir une promotion.',o:[
+     {t:'Je m’inscris',fx:{money:-150,cat:'autre',boost:1.05,joy:3},ok:1,f:'Investir en soi-même, c’est souvent le meilleur placement : ton salaire futur augmente !'},
+     {t:'Pas le temps',ok:null,f:'Peut-être plus tard.'}]},
+  ]}},
+{key:'house',lot:'agency',t:'Acheter ma maison',ic:'🏡',place:'Agence immobilière',col:'#2DB36F',age:32,y:2040,m:4,goal:300,base:3000,
+ desc:'Le grand projet : devenir propriétaire ! Apport, crédit sur 25 ans, frais de notaire, travaux… Chaque décision compte.',
+ onStart:()=>{const add=Math.round(Math.max(4000,(G.autoSave||150)*48)/100)*100;G.savings+=add;G.skipAdd=add},
+ intro:()=>{const pm=PM().rent,sal=salary(PAR.findIndex(x=>x.key==='house')),r=.036/12,n=300;
+   const opt=(t,price,joy,okv,f)=>{price=Math.round(price*pm/1000)*1000;const need=Math.round(price*.08/100)*100,mens=Math.round(price*r/(1-Math.pow(1+r,-n))),end=(mens+25)/sal;
+     const left=G.money+G.savings-need;return{t,s:`Prix ${fmt(price)} · notaire ${fmt(need)} · crédit ${fmt(mens)}/mois sur 25 ans (${Math.round(end*100)} % du salaire)`+(left>=0&&left<2500?` · ⚠️ il ne te restera que ${fmt(left)} de côté !`:''),need,
+       deny:end>.35?`🏦 Refus de la banque : endettement ${Math.round(end*100)} % (max 35 %)`:null,fx:{pay:need,cat:'logement',house:{n:t,price,mens},joy},ok:okv,f}};
+   return{e:'🏡',t:'Devenir propriétaire',q:`Tu as 32 ans. En 4 ans, ton épargne régulière t’a rapporté ${fmt(G.skipAdd||0)} de plus 🐷 Tu as maintenant ${fmt(Math.max(0,G.money+G.savings))}. Ta banque peut te prêter sur 25 ans à 3,6 %. Que choisis-tu ?`,
+   o:[opt('Appartement T3',190000,8,1,'Un achat raisonnable : ton crédit remplace ton loyer, et chaque mois tu deviens un peu plus propriétaire !'),
+      opt('Maison de village à rénover',140000,6,null,'Pas chère… mais prévois un budget travaux !'),
+      opt('Grande maison avec jardin',320000,14,0,'Magnifique, mais le crédit prend une énorme part de ton salaire : au moindre imprévu, ça coince.'),
+      {t:'Je reste locataire et j’investis la différence',s:'Tu places 1 000 € en bourse',fx:{toInvest:1000},ok:null,f:'Une stratégie qui se défend, à condition d’investir vraiment chaque mois.'}]}},
+ fixed:()=>{const f=baseFixed(1.15);if(G.house){const i=f.findIndex(x=>x.t==='Loyer');f[i]={d:3,ic:'🏦',t:'Crédit immobilier',a:-G.house.mens,cat:'logement'};
+   f.push({d:8,ic:'🛡️',t:'Assurance emprunteur',a:-25,cat:'logement'},{d:15,ic:'🏛️',t:'Taxe foncière (mensualisée)',a:-Math.round(G.house.price*.005/12),cat:'logement'})}
+   if(G.car)G.car.costs.forEach(([t,a],i)=>f.push({d:[6,17,23][i]||24,ic:'🚗',t,a:-a,cat:'transport'}));return f},
+ deck:{
+  choice:[
+   {e:'🔨',t:'La salle de bain',cond:G=>G.house,q:'La salle de bain de ton nouveau logement est à refaire.',o:[
+     {t:'Je compare 3 devis d’artisans',fx:{pay:1800,cat:'logement',joy:4},ok:1,f:'Comparer 3 devis fait souvent économiser 20 à 30 % !'},
+     {t:'Le premier artisan trouvé',fx:{pay:3000,cat:'logement',joy:4},ok:0,f:'Sans comparer, tu as payé bien plus cher que le prix du marché.'},
+     {t:'Je le fais moi-même avec des tutos',fx:{pay:700,cat:'logement',joy:-2},ok:null,f:'Très économique… mais long et fatigant !'}]},
+   {e:'🏦',t:'Les taux baissent',cond:G=>G.house,q:'Les taux de crédit ont baissé. Tu pourrais renégocier ton prêt.',o:[
+     {t:'Je fais jouer la concurrence entre banques',fx:G=>{G.house.mens=Math.max(0,G.house.mens-60);G._note='Ta mensualité baisse de 60 € !';return{joy:4}},ok:1,f:'60 € de moins par mois, c’est 18 000 € économisés sur 25 ans.'},
+     {t:'Pas le temps',ok:null,f:'Dommage : renégocier peut faire économiser des milliers d’euros.'}]},
+   {e:'🛡️',t:'L’assurance emprunteur',cond:G=>G.house,q:'Une autre assurance emprunteur te propose les mêmes garanties pour 12 € de moins par mois.',o:[
+     {t:'Je change (c’est mon droit)',fx:{money:12,joy:2},ok:1,f:'La loi permet de changer d’assurance emprunteur à tout moment : 3 600 € économisés sur 25 ans !'},
+     {t:'Je garde celle de la banque',ok:0,f:'Tu laisses filer des milliers d’euros sur la durée du crédit.'}]},
+   {e:'🛏️',t:'La chambre d’amis',cond:G=>G.house,q:'Une chambre reste vide. Un étudiant cherche une location à 350 €/mois.',o:[
+     {t:'Je loue la chambre',fx:{money:350,joy:-1},ok:1,f:'Un revenu en plus pour rembourser ton crédit plus vite (à déclarer aux impôts).'},
+     {t:'Je garde mon espace',ok:null,f:'C’est aussi un choix de confort.'}]},
+   {e:'🔎',t:'Visite coup de cœur',cond:G=>!G.house,q:'Tu visites une maison magnifique… 40 000 € au-dessus de ton budget.',o:[
+     {t:'Je simule le crédit et mon taux d’endettement',ok:1,f:'Le bon réflexe : un coup de cœur ne doit jamais faire oublier les calculs.'},
+     {t:'Je signe tout de suite, c’est la bonne !',fx:{joy:-6,money:-500,cat:'logement'},ok:0,f:'La banque refuse le prêt… et tu as perdu 500 € de frais de dossier.'}]},
+   {e:'🐷',t:'Épargner pour l’apport',cond:G=>!G.house,q:'Pour acheter plus tard, il te faut un apport (au moins les frais de notaire).',o:[
+     {t:'Je mets 300 € de côté ce mois-ci',fx:{toSavings:300},ok:1,f:'Chaque mois compte !'},
+     {t:'J’investis 300 € en bourse pour le long terme',fx:{toInvest:300},ok:null,f:'Possible si ton achat est dans plus de 5 ans.'}]},
+  ],
+  event:[
+   {e:'🔥',t:'Chaudière en panne',cond:G=>G.house,q:'En plein hiver, la chaudière lâche ! Réparation : 1 200 €.',o:[
+     {t:'Je paye avec mon épargne de précaution',fx:{pay:1200,cat:'imprevus'},ok:1,f:'Propriétaire, c’est toi qui paies les réparations : l’épargne de précaution est indispensable !'},
+     {t:'Crédit conso à 9 %',fx:{money:-1300,cat:'imprevus'},ok:0,f:'Un crédit pour une réparation coûte plus cher. Avoir de l’argent de côté évite ça.'}]},
+  ],
+  quiz:[
+   {q:'Dans l’ancien, les frais de notaire représentent environ…',o:['1 % du prix','8 % du prix','30 % du prix'],a:1,f:'Environ 7 à 8 % : il faut les prévoir en plus du prix !'},
+   {q:'Les banques prêtent si tes mensualités ne dépassent pas…',o:['15 % de tes revenus','35 % de tes revenus','70 % de tes revenus'],a:1,f:'C’est la règle des 35 % pour éviter le surendettement.'},
+   {q:'Le PTZ, c’est…',o:['Un prêt à taux zéro pour un premier achat','Une taxe sur les maisons','Un placement'],a:0,f:'Sous conditions de revenus, l’État aide les primo-accédants.'},
+   {q:'Emprunter 200 000 € sur 25 ans à 3,6 % coûte en intérêts environ…',o:['10 000 €','100 000 €','200 000 €'],a:1,f:'Environ 103 000 € d’intérêts ! D’où l’intérêt de négocier le taux et la durée.'},
+  ],
+  shop:[
+   {e:'🛋️',t:'Meubler le salon',q:'Ton nouveau salon est vide.',o:[
+     {t:'Tout neuf (4 500 €)',fx:{pay:4500,cat:'achats',joy:7},ok:0,f:'Après un achat immobilier, mieux vaut garder une épargne de sécurité…'},
+     {t:'Occasion + récup’ (1 200 €)',fx:{pay:1200,cat:'achats',joy:5},ok:1,f:'Malin : ton salon est beau et ton épargne intacte.'}]},
+   {e:'☀️',t:'Panneaux solaires',cond:G=>G.house,q:'Installer des panneaux solaires coûte 7 000 € (aides déduites), pour environ 600 € d’électricité économisés par an.',o:[
+     {t:'Je me lance',fx:{pay:7000,cat:'logement',joy:5},ok:null,f:'Rentabilisé en environ 12 ans… et bon pour la planète. À faire si ton épargne le permet !'},
+     {t:'Pas maintenant',ok:null,f:'Tu pourras y revenir quand ton épargne sera reconstituée.'}]},
+  ]}},
+];
+
+/* =========================================================
+   PARCOURS SUPPLÉMENTAIRES SELON L'ÂGE (enfants / ados)
+   ========================================================= */
+const EXTRA={
+pocket:{key:'pocket',lot:'school',t:'Mon argent de poche',ic:'🪙',place:'École',col:'#F59E0B',age:12,y:2020,m:2,goal:8,start:20,payName:'Argent de poche',noCommon:true,
+ desc:'20 € par mois rien que pour toi ! Bonbons, cartes, jeux… sauras-tu en garder un peu dans ta tirelire ?',
+ intro:{e:'🪙',t:'Ton argent de poche',q:'Tu as 12 ans. Tes parents te proposent un marché pour ton argent de poche. Que choisis-tu ?',o:[
+   {t:'20 € par mois, à gérer tout·e seul·e',ok:1,f:'Gérer un budget pour tout le mois, c’est apprendre à prévoir !'},
+   {t:'20 € + 5 € si j’aide à la maison',s:'Vaisselle, poubelles, ranger…',fx:{pocketBonus:5},ok:1,f:'Gagner de l’argent grâce à ses efforts : bravo ! Tu toucheras 5 € de plus le 15.'}]},
+ fixed:()=>[{d:9,ic:'📱',t:'Ta part du forfait téléphone',a:-3,cat:'factures'},...(G.pocketBonus?[{d:15,ic:'🧹',t:'Bonus coups de main',a:5,cat:'revenu'}]:[])],
+ deck:{
+  choice:[
+   {e:'🍬',t:'La boulangerie après l’école',q:'Tes copains achètent des bonbons tous les jours (2 €).',o:[
+     {t:'Tous les jours avec eux',fx:{money:-8,cat:'loisirs',joy:3},ok:null,f:'Sur un mois, ça fait presque la moitié de ton argent de poche !'},
+     {t:'Seulement le vendredi',fx:{money:-2,cat:'loisirs',joy:2},ok:1,f:'Se faire plaisir de temps en temps : parfait !'},
+     {t:'Je prends un goûter de la maison',fx:{joy:1},ok:1,f:'Malin, et tes copains te piqueront peut-être ton goûter 😄'}]},
+   {e:'🃏',t:'Les cartes à collectionner',q:'Un paquet de cartes coûte 5 €. Tu n’as toujours pas la carte rare…',o:[
+     {t:'J’achète 2 paquets',fx:{money:-10,cat:'loisirs',joy:3},ok:null,f:'Les paquets, c’est le hasard : on ne sait jamais ce qu’on aura…'},
+     {t:'J’échange mes doubles avec les copains',fx:{joy:4},ok:1,f:'Échanger, c’est gratuit et c’est fun !'}]},
+   {e:'🎮',t:'Achat dans le jeu',q:'Un skin coûte « 1 000 gemmes » dans ton jeu… soit 10 € en vrai.',o:[
+     {t:'Je l’achète',fx:{money:-10,cat:'loisirs',joy:3},ok:0,f:'Les monnaies virtuelles cachent le vrai prix en euros. Toujours convertir avant d’acheter !'},
+     {t:'J’attends une semaine pour voir si j’en ai encore envie',ok:1,f:'Souvent, l’envie passe toute seule 😉'}]},
+   {e:'🐷',t:'Le défi de mamie',q:'Mamie propose : pour chaque 2 € que tu mets dans ta tirelire ce mois-ci, elle ajoute 1 € !',o:[
+     {t:'J’y mets 6 € (et mamie ajoute 3 €)',fx:{money:3,toSavings:9},ok:1,f:'Ton argent a grandi tout seul : c’est un peu comme des intérêts !'},
+     {t:'Non merci',ok:0,f:'Tu laisses passer de l’argent gratuit…'}]},
+   {e:'🤝',t:'Le copain qui emprunte',q:'Ton copain te demande 5 € pour s’acheter un sandwich.',o:[
+     {t:'Je lui prête et on dit quand il me rembourse',ok:1,f:'Prêter oui, mais clairement. Il te rend les 5 € lundi.'},
+     {t:'Je lui donne sans rien dire',fx:{money:-5,cat:'autre',joy:2},ok:null,f:'Gentil ! Mais il a oublié de te rembourser…'},
+     {t:'Je refuse',ok:null,f:'Tu as le droit de dire non.'}]},
+  ],
+  quiz:[
+   {q:'Tu as 20 € et tu dépenses 12 €. Il te reste…',o:['6 €','8 €','12 €'],a:1,f:'20 − 12 = 8 €.'},
+   {q:'Une tirelire sert à…',o:['Garder de l’argent pour plus tard','Acheter des bonbons','Jouer'],a:0,f:'Épargner, c’est garder pour plus tard 🐷'},
+   {q:'Lequel est un BESOIN ?',o:['Un manteau en hiver','Un jeu vidéo','Une figurine'],a:0,f:'Un besoin, c’est ce dont on ne peut pas se passer.'},
+   {q:'Tu mets 2 € de côté chaque semaine. Après 10 semaines, tu as…',o:['12 €','20 €','2 €'],a:1,f:'10 × 2 = 20 € ! Les petites sommes deviennent grandes.'},
+  ],
+  shop:[
+   {e:'🧸',t:'Peluche géante',q:'Elle coûte 15 € au magasin de jouets.',o:[
+     {t:'Je l’achète',fx:{money:-15,cat:'achats',joy:4},ok:null,f:'Toute douce… mais presque tout ton argent de poche !'},
+     {t:'Je la mets sur ma liste d’envies',ok:1,f:'Si tu en as encore envie dans un mois, tu sauras que tu y tiens vraiment.'}]},
+   {e:'⚽',t:'Nouveau ballon',q:'Ton ballon est crevé. Un nouveau coûte 12 €.',o:[
+     {t:'J’en achète un',fx:{money:-12,cat:'achats',joy:4},ok:null,f:'Utile pour jouer avec les copains !'},
+     {t:'J’utilise celui de mon frère',fx:{joy:1},ok:1,f:'Partager, c’est économiser.'}]},
+   {e:'📚',t:'La nouvelle BD',q:'Le dernier tome de ta BD préférée : 8 €.',o:[
+     {t:'Je l’achète',fx:{money:-8,cat:'achats',joy:4},ok:null,f:'Bonne lecture 📖'},
+     {t:'Je l’emprunte à la médiathèque',fx:{joy:3},ok:1,f:'Gratuit ! La médiathèque, c’est un super bon plan.'}]},
+  ],
+  event:[
+   {e:'👓',t:'Lunettes cassées',q:'Tu as cassé tes lunettes en jouant. Tes parents paient, mais te demandent 5 €.',o:[{t:'Je participe',fx:{pay:5,cat:'imprevus',joy:-1},ok:1,f:'Participer, c’est être responsable 👍'}]},
+   {e:'🚲',t:'Pneu crevé',q:'Ton vélo est crevé ! Une rustine coûte 3 €.',o:[{t:'Je répare',fx:{money:-3,cat:'imprevus'},ok:1,f:'Réparer soi-même, c’est économique.'}]},
+   {e:'😢',t:'Billet perdu',q:'Tu as perdu un billet de 5 € dans la cour…',o:[{t:'Zut !',fx:{money:-5,cat:'imprevus',joy:-3},ok:null,f:'Astuce : un petit porte-monnaie, c’est plus sûr que la poche.'}]},
+  ],
+  luck:[
+   {e:'🎂',t:'Anniversaire',q:'Ton oncle t’offre 20 € pour ton anniversaire !',o:[
+     {t:'Tout dans la tirelire',fx:{money:20,toSavings:20},ok:1,f:'Super écureuil 🐿️'},
+     {t:'La moitié dans la tirelire',fx:{money:20,toSavings:10,joy:2},ok:1,f:'Le bon équilibre !'},
+     {t:'Je garde tout pour dépenser',fx:{money:20,joy:3},ok:null,f:'C’est ton cadeau, profites-en !'}]},
+   {e:'🧽',t:'Coup de main',q:'Tu laves la voiture du voisin : il te donne 5 € !',o:[{t:'Merci !',fx:{money:5,joy:2},ok:1,f:'Ton premier « salaire » 💪'}]},
+   {e:'🏆',t:'Bonne note',q:'Super note en maths ! Tes parents te donnent 5 €.',o:[{t:'Génial !',fx:{money:5,joy:3},ok:null,f:'Bravo pour tes efforts 🎉'}]},
+  ],
+  sortie:[
+   {e:'🎬',t:'Ciné avec les copains',q:'Une place de ciné coûte 7 €.',o:[{t:'J’y vais',fx:{money:-7,cat:'loisirs',joy:5},ok:null,f:'Bon film 🍿'},{t:'Film à la maison',fx:{joy:3},ok:1,f:'Gratuit et tout aussi sympa !'}]},
+   {e:'🍦',t:'Glace au parc',q:'Une glace coûte 3 €.',o:[{t:'Miam !',fx:{money:-3,cat:'loisirs',joy:3},ok:null,f:'Un petit plaisir 🍦'},{t:'Goûter maison',fx:{joy:2},ok:1,f:'Économique !'}]},
+   {e:'🎡',t:'La fête foraine',q:'Les manèges coûtent 3 € chacun.',o:[{t:'3 manèges (9 €)',fx:{money:-9,cat:'loisirs',joy:6},ok:null,f:'Sensations fortes 🎢'},{t:'1 seul manège (3 €)',fx:{money:-3,cat:'loisirs',joy:4},ok:1,f:'Le plaisir sans tout dépenser !'}]},
+  ],
+  mail:[
+   {e:'🎣',t:'Message bizarre dans un jeu',q:'« Gagne 1 000 gemmes gratuites ! Donne juste le mot de passe de tes parents. »',o:[
+     {t:'Je ferme et je préviens un adulte',ok:1,f:'Parfait ! C’est une arnaque. On ne donne JAMAIS un mot de passe.'},
+     {t:'J’essaie, c’est gratuit !',fx:{joy:-8},ok:0,f:'C’était une arnaque : le compte de tes parents a été piraté. Toujours demander à un adulte !'}]},
+   {e:'💌',t:'Carte de mamie',q:'Mamie t’envoie une carte avec 10 €.',o:[{t:'Merci mamie !',fx:{money:10,joy:3},ok:null,f:'Pense à l’appeler pour la remercier 💌'}]},
+  ]}},
+summer:{key:'summer',lot:'snack',t:'Mon job d’été',ic:'☀️',place:'Snack',col:'#E8A600',age:16,y:2024,m:6,goal:150,start:150,payName:'Paie du job d’été',
+ desc:'À 16 ans, tu peux travailler pendant les vacances. Ton premier vrai salaire… et tes premières grosses tentations !',
+ intro:{e:'☀️',t:'Ton premier job d’été',q:'Tu as 16 ans et c’est l’été. Quel job choisis-tu ?',o:[
+   {t:'Animateur·rice en centre de loisirs',s:'650 € · tu adores les enfants',fx:{summer:{n:'Animation',sal:650},joy:4},ok:null,f:'Un job qui a du sens… et qui prépare au BAFA !'},
+   {t:'Serveur·se au snack de la plage',s:'750 € · rythme intense',fx:{summer:{n:'Snack de la plage',sal:750}},ok:null,f:'Bien payé, et parfois des pourboires !'},
+   {t:'Cueillette des fruits',s:'700 € · dur mais en plein air',fx:{summer:{n:'Cueillette',sal:700},joy:-2},ok:null,f:'Physique… mais tu vas être en super forme.'}]},
+ fixed:()=>[{d:5,ic:'📱',t:'Ta part du forfait téléphone',a:-10,cat:'factures'},{d:12,ic:PM().ic,t:PM().trn,a:-Math.round(20*PM().tr),cat:'transport'}],
+ deck:{
+  choice:[
+   {e:'🧾',t:'Ton premier contrat',q:'Comme tu es mineur·e, il faut l’accord de tes parents pour signer ton contrat.',o:[
+     {t:'On le lit ensemble et ils signent',ok:1,f:'Parfait : on lit toujours un contrat avant de signer !'},
+     {t:'J’imite leur signature',fx:{joy:-6},ok:0,f:'Interdit ! Et ton patron l’a remarqué…'}]},
+   {e:'💳',t:'Ta première carte bancaire',q:'Ta banque propose une carte pour les 16-17 ans.',o:[
+     {t:'Carte gratuite qui vérifie le solde',ok:1,f:'Impossible de dépenser plus que ce que tu as : idéal pour commencer.'},
+     {t:'Pas de carte, tout en espèces',ok:null,f:'Ça marche, mais attention à ne pas perdre ton argent !'}]},
+   {e:'🏖️',t:'Les vacances des potes',q:'Tes amis partent une semaine à la mer : 250 €.',o:[
+     {t:'J’y vais toute la semaine',fx:{money:-250,cat:'loisirs',joy:10},ok:null,f:'Super souvenirs… mais une grosse partie de ton salaire !'},
+     {t:'Je les rejoins pour le week-end (90 €)',fx:{money:-90,cat:'loisirs',joy:7},ok:1,f:'Le bon compromis 👍'},
+     {t:'Je reste travailler',fx:{joy:-4},ok:null,f:'Ton compte te dit merci, ton moral un peu moins.'}]},
+   {e:'🎮',t:'La console de tes rêves',q:'Elle coûte 450 €. Ton salaire n’est pas encore arrivé…',o:[
+     {t:'Je la prends en 3 fois tout de suite',fx:{money:-150,cat:'achats',joy:6,debt:{t:'Console en 3 fois',a:150}},ok:0,f:'Payer en plusieurs fois avant même d’avoir touché son salaire : danger ! Il restera des mensualités.'},
+     {t:'J’attends ma paie et je compare',ok:1,f:'Sage décision !'},
+     {t:'Une console d’occasion (220 €)',fx:{money:-220,cat:'achats',joy:5},ok:1,f:'Même plaisir, moitié prix 🎮'}]},
+   {e:'🐷',t:'Le Livret Jeune',q:'Dès 12 ans, tu peux ouvrir un Livret Jeune : il rapporte souvent plus que le Livret A !',o:[
+     {t:'Je l’ouvre avec 50 €',fx:{toSavings:50},ok:1,f:'Ton argent travaille pour toi, sans aucun risque.'},
+     {t:'Plus tard',ok:null,f:'Pense-y : plus tôt tu commences, mieux c’est.'}]},
+  ],
+  quiz:[
+   {q:'À 16 ans, tu peux travailler…',o:['Pendant les vacances, avec l’accord de tes parents','Jamais','Uniquement la nuit'],a:0,f:'Dès 14 ans pendant les vacances, avec des règles pour protéger les jeunes.'},
+   {q:'Le SMIC, c’est…',o:['Le salaire minimum légal','Une marque de baskets','Une aide pour les vacances'],a:0,f:'Aucun employeur ne peut payer moins (avec quelques exceptions pour les moins de 18 ans).'},
+   {q:'Tu gagnes 700 € et tu en épargnes la moitié. Ça fait…',o:['70 €','350 €','700 €'],a:1,f:'700 ÷ 2 = 350 €.'},
+   {q:'Ton salaire NET, c’est…',o:['Ce que tu reçois vraiment','Le salaire avant les cotisations','Une prime'],a:0,f:'Brut − cotisations = net.'},
+  ],
+  shop:[
+   {e:'👟',t:'Baskets édition limitée',q:'Tout le monde en parle : 160 €.',o:[
+     {t:'Je les achète',fx:{money:-160,cat:'achats',joy:5},ok:null,f:'Stylé ! Mais était-ce prévu dans ton budget ?'},
+     {t:'Je garde les miennes',ok:1,f:'L’effet de mode passe vite…'}]},
+   {e:'🎧',t:'Écouteurs',q:'Pour écouter de la musique pendant tes pauses.',o:[
+     {t:'Grande marque (120 €)',fx:{money:-120,cat:'achats',joy:4},ok:null,f:'Le son est top… le prix aussi.'},
+     {t:'Modèle simple (30 €)',fx:{money:-30,cat:'achats',joy:3},ok:1,f:'Il fait très bien le travail !'}]},
+   {e:'🕶️',t:'Lunettes de soleil',q:'Le soleil tape au travail.',o:[
+     {t:'Modèle à 15 €',fx:{money:-15,cat:'achats',joy:2},ok:1,f:'Utile et pas cher ☀️'},
+     {t:'Marque de luxe (140 €)',fx:{money:-140,cat:'achats',joy:3},ok:0,f:'Tu paies surtout le logo !'}]},
+  ]}},
+};
+let PAR=BASE;
+function buildTrack(){const a=G.persona?G.persona.age:'young';return[...(a==='kid'?[EXTRA.pocket,EXTRA.summer]:a==='teen'?[EXTRA.summer]:[]),...BASE]}
+const LV=()=>G.persona?G.persona.level:2;
+const goalOf=P=>Math.max(5,Math.round(P.goal*[.7,1,1.3][LV()-1]/5)*5);
+const introOf=P=>typeof P.intro==='function'?P.intro():P.intro;
+const PM=()=>({city:{rent:1.3,tr:1,trn:'Pass métro',ic:'🚇'},town:{rent:1,tr:1,trn:'Pass transport',ic:'🚌'},country:{rent:.75,tr:1.7,trn:'Essence / covoiturage',ic:'⛽'}})[(G.persona&&G.persona.place)||'town'];
+
+/* =========================================================
+   PERSONA : questionnaire de départ
+   ========================================================= */
+const ARCH={spender:{e:'🦋',n:'Le papillon',d:'Tu aimes te faire plaisir tout de suite.',c:'Ton défi : apprendre à attendre avant d’acheter.'},
+  saver:{e:'🐿️',n:'L’écureuil',d:'Tu sais mettre de côté.',c:'Ton défi : faire grandir ton épargne… et profiter aussi !'},
+  balanced:{e:'🦉',n:'Le hibou',d:'Tu cherches le bon équilibre.',c:'Ton défi : te fixer de grands objectifs.'}};
+const LVN=['','Débutant','Intermédiaire','Expert'];
+const PLN={city:'🏙️ Grande ville',town:'🏘️ Petite ville',country:'🌾 Campagne'};
+const DREAMS={travel:{ic:'✈️',n:'Voyager partout',cost:5000},house:{ic:'🏡',n:'Avoir ma maison',cost:30000},car:{ic:'🚗',n:'Une super voiture',cost:15000},help:{ic:'💝',n:'Aider les autres',cost:3000},business:{ic:'🚀',n:'Créer mon entreprise',cost:20000}};
+const ONB=[
+ {k:'age',e:'🎂',q:'Quel âge as-tu ?',sub:'Ta vie dans le jeu commencera au bon moment',two:1,o:[['kid','8 – 13 ans','🧒'],['teen','14 – 17 ans','🧑‍🎓'],['young','18 – 25 ans','🧑'],['adult','26 ans et +','🧑‍💼']]},
+ {k:'place',e:'📍',q:'Où vis-tu ?',sub:'Ta ville dans le jeu va lui ressembler',o:[['city','En grande ville','🏙️'],['town','Dans une petite ville','🏘️'],['country','À la campagne','🌾']]},
+ {k:'exp',multi:1,e:'🎒',q:'Qu’as-tu déjà dans ta vie ?',sub:'Coche tout ce qui est vrai (ou rien du tout !)',two:1,o:[['pocket','De l’argent de poche','🪙'],['bank','Un compte en banque','💳'],['job','Un job ou un salaire','💼'],['home','Mon propre logement','🔑'],['save','Des économies','🐷'],['invest','Des placements','📈']]},
+ {k:'style',e:'💸',q:'Quand tu as un peu d’argent, tu…',o:[['spender','Le dépenses vite','🛍️'],['saver','Le gardes précieusement','🐿️'],['balanced','Un peu des deux','⚖️']]},
+ {k:'dream',e:'🌟',q:'Quel est ton plus grand rêve ?',sub:'Il apparaîtra dans ta ville !',o:Object.entries(DREAMS).map(([k,d])=>[k,d.n,d.ic])},
+ {k:'quiz',e:'🧠',q:'Petit test de connaissances',sub:'3 questions, sans stress !'},
+];
+const OQ={
+ kid:[{q:'Tu as 10 € et tu achètes un jouet à 7 €. Il te reste…',o:['2 €','3 €','7 €'],a:1},{q:'Épargner, c’est…',o:['Garder de l’argent pour plus tard','Tout dépenser','Prêter à un copain'],a:0},{q:'Lequel est un BESOIN ?',o:['Manger','Un jeu vidéo','Des bonbons'],a:0}],
+ teen:[{q:'Ton salaire NET, c’est…',o:['Ce que tu reçois vraiment','Le salaire avant cotisations','Une prime'],a:0},{q:'Emprunter de l’argent à une banque…',o:['C’est gratuit','Coûte des intérêts','Est interdit'],a:1},{q:'10 % de 200 €, c’est…',o:['2 €','20 €','200 €'],a:1}],
+ young:[{q:'Le Livret A est…',o:['Sans risque','Très risqué','Réservé aux plus de 30 ans'],a:0},{q:'Les intérêts composés, c’est…',o:['Des intérêts sur tes intérêts','Des frais bancaires','Un impôt'],a:0},{q:'Diversifier ses placements permet de…',o:['Réduire le risque','Gagner à coup sûr','Ne plus payer d’impôts'],a:0}],
+ adult:[{q:'Un ETF, c’est…',o:['Un panier d’actions','Un livret réglementé','Une assurance'],a:0},{q:'Le TAEG mesure…',o:['Le coût total d’un crédit','Le rendement d’un livret','L’inflation'],a:0},{q:'La « règle des 4 % » sert à…',o:['Estimer le capital pour vivre de ses revenus','Calculer ses impôts','Choisir un crédit'],a:0}],
+};
+let OB={i:0,ans:{exp:[]},qi:0,score:0,picked:null};
+function showOnb(){$('#city').classList.add('hidden');$('#onb').classList.remove('hidden');renderOnb()}
+function renderOnb(){
+  const el=$('#onb'),N=ONB.length;let h='';
+  if(OB.i===0){h=`<div class="em">🏙️</div><h2>Bienvenue dans Capylum !</h2><p class="sub">Ici, tu vas vivre une vie en accéléré : argent de poche, jobs, logement, achats, avenir…<br><br>Mais d’abord, faisons connaissance : <b>6 petites questions</b> pour créer une vie qui <b>te ressemble</b>.</p>
+    <button class="btn" data-a="obNext">C’est parti !</button>`}
+  else if(OB.i<=N){const s=ONB[OB.i-1];
+    h=`<div class="obp"><i style="width:${(OB.i-1)/N*100}%"></i></div><div class="em">${s.e}</div><h2>${s.q}</h2><p class="sub">${s.sub||''}</p>`;
+    if(s.k==='quiz'){const list=OQ[OB.ans.age||'young'],q=list[OB.qi],p=OB.picked;
+      h+=`<p style="text-align:center;font-weight:900;color:var(--indigo);margin:-6px 0 8px">Question ${OB.qi+1} / 3</p><p style="text-align:center;font-size:17px;margin:0 0 14px">${q.q}</p><div class="obo">`+
+        q.o.map((o,i)=>`<button class="obb ${p==null?'':i===q.a?'right':i===p?'wrong':''}" data-a="obQuiz" data-v="${i}" ${p!=null?'disabled':''}>${o}</button>`).join('')+'</div>'+
+        (p!=null?`<button class="btn" data-a="obNext">${OB.qi<2?'Question suivante':'Voir mon profil ✨'}</button>`:'')}
+    else{h+=`<div class="obo ${s.two?'two':''}">`+s.o.map(([k,l,e])=>{const on=s.multi?OB.ans.exp.includes(k):OB.ans[s.k]===k;
+        return`<button class="obb ${on?'on':''}" data-a="${s.multi?'obToggle':'obPick'}" data-v="${k}"><span>${e}</span>${l}</button>`}).join('')+'</div>'+
+      (s.multi?`<button class="btn" data-a="obNext">Continuer</button>`:'')}
+    if(OB.i>1)h+=`<button class="btn ghost" data-a="obBack">← Retour</button>`}
+  else{const P=G.persona,a=ARCH[P.style],d=DREAMS[P.dream],track=buildTrack(),first=track[0];
+    h=`<div class="pcard"><div class="big">${a.e}</div><b>${a.n}</b><div>${a.d}</div><div class="pchips"><span>🧠 ${LVN[P.level]}</span><span>${PLN[P.place]}</span><span>🌟 ${d.ic} ${d.n}</span></div></div>
+    <div class="lbl" style="margin-bottom:4px">Ta vie est adaptée à toi :</div><ul class="adapt">
+      <li>🗓️ Tu commences à <b>${first.age} ans</b> : « ${first.ic} ${first.t} », puis ${track.length-1} autres étapes de vie jusqu’à ${track[track.length-1].age} ans.</li>
+      <li>${P.place==='city'?'🏙️ Grande ville : gratte-ciel et métro, mais <b>loyers +30 %</b>.':P.place==='country'?'🌾 Campagne : fermes et champs, <b>loyers −25 %</b>, mais il faut se déplacer en voiture (<b>transport ×1,7</b>).':'🏘️ Petite ville : des prix « moyens » pour tout.'}</li>
+      <li>🧠 Niveau ${LVN[P.level]} (${P.score}/3 au test) : ${P.level===1?'objectifs plus doux, moins d’imprévus et quiz simples.':P.level===3?'objectifs plus ambitieux, plus d’imprévus et quiz avancés !':'objectifs et quiz standards.'}</li>
+      <li>🌟 Ton rêve ${d.ic} est construit dans la ville : chaque euro épargné t’en rapproche.</li>
+      <li>${a.e} ${a.c}</li></ul>
+    <button class="btn" data-a="obDone">Créer mon personnage →</button><button class="btn ghost" data-a="obRestart">↺ Refaire le questionnaire</button>`}
+  el.innerHTML=`<div class="ob">${h}</div>`;
+}
+function finishOnb(){
+  const a=OB.ans,exp=a.exp.length,k=OB.score+(exp>=4?2:exp>=2?1:0)+(a.age==='adult'?1:0);
+  G.persona={age:a.age,place:a.place||'town',exp:a.exp,style:a.style||'balanced',dream:a.dream||'travel',score:OB.score,level:k<=1?1:k<=3?2:3};
+  save();
+}
+const A_ONB={
+  obNext:()=>{const s=ONB[OB.i-1];if(s&&s.k==='quiz'){if(OB.qi<2){OB.qi++;OB.picked=null;return renderOnb()}OB.i++;finishOnb();return renderOnb()}OB.i++;renderOnb()},
+  obPick:v=>{const s=ONB[OB.i-1];OB.ans[s.k]=v;beep('tap');OB.i++;if(s.k==='age'){OB.qi=0;OB.score=0;OB.picked=null}renderOnb()},
+  obToggle:v=>{const e=OB.ans.exp;OB.ans.exp=e.includes(v)?e.filter(x=>x!==v):[...e,v];renderOnb()},
+  obQuiz:v=>{const q=OQ[OB.ans.age||'young'][OB.qi];OB.picked=+v;if(+v===q.a){OB.score++;beep('ok')}else beep('bad');renderOnb()},
+  obBack:()=>{if(ONB[OB.i-1]&&ONB[OB.i-1].k==='quiz'&&OB.qi>0){OB.qi--;OB.picked=null;return renderOnb()}OB.i=Math.max(0,OB.i-1);if(ONB[OB.i-1]&&ONB[OB.i-1].k==='quiz'){OB.qi=0;OB.score=0;OB.picked=null}renderOnb()},
+  obRestart:()=>{OB={i:1,ans:{exp:[]},qi:0,score:0,picked:null};renderOnb()},
+  obDone:()=>{$('#onb').classList.add('hidden');creator(true)},
+};
+function dreamPct(){const d=G.persona&&DREAMS[G.persona.dream];return d?clamp(Math.round(Math.max(0,wealth())/d.cost*100),0,100):0}
+function personaRows(){if(!G.persona)return'';const P=G.persona,a=ARCH[P.style],d=DREAMS[P.dream];
+  return`<div class="row"><span>${a.e} Profil</span><b>${a.n} · ${LVN[P.level]}</b></div><div class="row"><span>📍 Lieu de vie</span><b>${PLN[P.place]}</b></div><div class="row"><span>🌟 Rêve ${d.ic}</span><b>${dreamPct()} %</b></div>`}
+function coachHTML(st){
+  if(!G.persona)return'';const a=ARCH[G.persona.style];let m;
+  const top=Object.entries(R.spent).filter(([k])=>CATS[k]).sort((x,y)=>y[1]-x[1])[0];
+  if(G.persona.style==='spender')m=st[1]?'Tu as dompté ton côté papillon ce mois-ci, bravo ! 🦋':`Ton plus gros poste de dépenses : ${top?CATS[top[0]]:'—'}. Astuce : attends 24 h avant chaque achat plaisir.`;
+  else if(G.persona.style==='saver')m=st[2]?'Tu épargnes ET tu gardes le moral : parfait ! 🐿️':'Tu épargnes bien, mais pense aussi à te faire plaisir : le moral compte !';
+  else m=st[0]&&st[1]?'Équilibre parfait ce mois-ci 🦉 Prochaine étape : faire travailler ton épargne.':'Regarde les factures à venir dans le calendrier pour ne jamais être dans le rouge.';
+  return`<div class="verdict neu" style="margin:12px 0 0"><b>${a.e} Conseil pour toi</b><p>${m}</p></div>`;
+}
+function dreamModal(){const d=DREAMS[G.persona.dream],p=dreamPct();
+  modal(`<div class="sh" style="--tc:#E8A600"><div class="ty"><span>🌟 Mon rêve</span></div><div class="em">${d.ic}</div><h3>${d.n}</h3></div><div class="sb">
+    <p>Pour réaliser ton rêve, il te faut environ <b>${fmt(d.cost)}</b>. Tu as déjà <b>${fmt(Math.max(0,wealth()))}</b> (compte + épargne + placements).</p>
+    <div class="goal" style="margin:0 0 10px;box-shadow:none;padding:0"><b>${p} %</b><div class="gb"><i style="width:${p}%"></i></div></div>
+    <p style="font-size:14px">💡 ${p>=100?'Tu peux réaliser ton rêve ! Mais garde toujours une épargne de précaution 😉':'Chaque euro mis de côté te rapproche de ton rêve. Le jour de paie, pense à « te payer en premier » !'}</p>
+    <button class="btn" style="--tc:#E8A600" data-a="close">OK</button></div>`)}
+
+/* =========================================================
+   ÉTAT
+   ========================================================= */
+const KEY='capylum-v3';
+const fresh=()=>({char:null,age:18,money:0,savings:0,invest:0,joy:60,job:null,rent:500,transport:null,subs:[{t:'Streaming',a:14},{t:'Musique',a:11},{t:'Salle de sport',a:30}],
+  car:null,debts:[],autoSave:0,boost:1,goalTxt:null,stars:{},done:{},history:[],run:null,sound:true,screen:'city',lastSaved:0});
+let G=fresh(),R=null;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){G={...fresh(),...JSON.parse(r)};R=G.run}}catch(e){}}
+const nextIdx=()=>{for(let i=0;i<PAR.length;i++)if(!G.done[i])return i;return PAR.length};
+const salary=i=>{const P=PAR[i];if(P.key==='pocket')return 20;if(P.key==='summer')return G.summer?G.summer.sal:650;if(P.key==='work')return G.job?G.job.sal:1400;return Math.round(P.base*(G.job?G.job.f:1)*G.boost/10)*10};
+const wealth=()=>G.money+G.savings+G.invest;
+
+/* =========================================================
+   SONS / TOASTS / CONFETTIS
+   ========================================================= */
+let AC;
+function beep(type){
+  if(!G.sound)return;
+  try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const t0=AC.currentTime;
+    const N={ok:[660,990],bad:[260,190],step:[440],coin:[880,1320],win:[523,659,784,1046],dice:[300,340,380]}[type]||[500];
+    N.forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain(),t=t0+i*(type==='dice'?.05:.09);o.type=type==='bad'?'square':'triangle';o.frequency.value=f;
+      g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(type==='bad'?.04:type==='step'?.05:.12,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+.18);
+      o.connect(g).connect(AC.destination);o.start(t);o.stop(t+.2)})}catch(e){}
+}
+function toast(m,cls=''){const d=document.createElement('div');d.textContent=m;if(cls)d.className=cls;$('#toast').appendChild(d);setTimeout(()=>d.remove(),2600)}
+function confetti(){const c=$('#confetti'),cols=['#3F3FD4','#E0605F','#F7A23B','#2DB36F','#8B5CF6','#22B8CF'];
+  for(let i=0;i<70;i++){const s=document.createElement('i');s.style.left=Math.random()*100+'vw';s.style.background=cols[i%cols.length];
+    s.style.animationDuration=rnd(1.4,2.8)+'s';s.style.animationDelay=rnd(0,.4)+'s';c.appendChild(s);setTimeout(()=>s.remove(),3400)}}
+function modal(html,tc){$('#modal').innerHTML=`<div class="ov"><div class="sheet" style="${tc?'--tc:'+tc:''}">${html}</div></div>`}
+const closeModal=()=>{$('#modal').innerHTML=''};
+
+/* =========================================================
+   ARGENT : opérations du mois
+   ========================================================= */
+function logLine(t,a,cat){if(R)R.log.push({d:R.pos,t,a,cat})}
+function tx(a,label,cat){
+  a=Math.round(a);if(!a)return;G.money+=a;logLine(label,a,cat);
+  if(R){if(a<0){R.spent[cat||'autre']=(R.spent[cat||'autre']||0)-a}else R.earned+=a;R.minMoney=Math.min(R.minMoney,G.money)}
+}
+function toSav(x,label='Mis de côté 🐷'){x=Math.round(Math.min(x,Math.max(0,G.money)));if(x<=0)return 0;G.money-=x;G.savings+=x;logLine(label,-x,'epargne');return x}
+function fromSav(x){x=Math.round(Math.min(x,G.savings));if(x<=0)return 0;G.savings-=x;G.money+=x;logLine('Retrait de l’épargne 🐷',x,'epargne');return x}
+function toInv(x){x=Math.round(Math.min(x,Math.max(0,G.money)));if(x<=0)return 0;G.money-=x;G.invest+=x;logLine('Placement en bourse 📈',-x,'epargne');return x}
+function payPref(x,label,cat){
+  const s=Math.round(Math.min(G.savings,x));
+  if(s>0){G.savings-=s;logLine(label+' (avec l’épargne)',-s,cat);R.spent[cat]=(R.spent[cat]||0)+s}
+  if(x-s>0)tx(-(x-s),label,cat);
+}
+function apply(fx,label){
+  if(!fx)return;if(typeof fx==='function')fx=fx(G)||{};
+  const cat=fx.cat||'autre';
+  if(fx.money)tx(fx.money,label,fx.money>0?'revenu':cat);
+  if(fx.pay)payPref(fx.pay,label,cat);
+  if(fx.toSavings)toSav(fx.toSavings);
+  if(fx.toInvest)toInv(fx.toInvest);
+  if(fx.investAdd){G.invest+=fx.investAdd;logLine('Épargne retraite (+ abondement) 📈',0,'epargne')}
+  if(fx.wipeInvest)G.invest=0;
+  if(fx.investMul)G.invest*=fx.investMul;
+  if(fx.joy)G.joy=clamp(G.joy+fx.joy,0,100);
+  if(fx.house)G.house=fx.house;if(fx.sellCar)G.car=null;
+  if(fx.pocketBonus)G.pocketBonus=fx.pocketBonus;if(fx.summer)G.summer=fx.summer;
+  if(fx.job)G.job=fx.job;if(fx.rent)G.rent=fx.rent;if(fx.transport)G.transport=fx.transport;if(fx.goalTxt)G.goalTxt=fx.goalTxt;
+  if(fx.autoSave)G.autoSave=fx.autoSave;if(fx.boost)G.boost*=fx.boost;if(fx.car)G.car=fx.car;if(fx.debt)G.debts.push(fx.debt);
+  if(fx.removeSub)G.subs=fx.removeSub==='all'?[]:G.subs.filter(s=>s.t!==fx.removeSub);
+  if(R)R.minMoney=Math.min(R.minMoney,G.money);
+}
+function chips(fx){
+  if(!fx||typeof fx==='function')return'';const a=[];
+  if(fx.money)a.push([fx.money>0?'pos':'neg',sign(fx.money)]);
+  if(fx.pay)a.push(['neg','−'+fmt(fx.pay)]);
+  if(fx.toSavings)a.push(['sav','🐷 +'+fmt(fx.toSavings)]);
+  if(fx.toInvest)a.push(['sav','📈 +'+fmt(fx.toInvest)]);
+  if(fx.joy)a.push([fx.joy>0?'joy':'neg',`😊 ${fx.joy>0?'+':''}${fx.joy}`]);
+  if(fx.autoSave)a.push(['sav',`🔁 ${fmt(fx.autoSave)}/mois`]);
+  return a.map(([c,t])=>`<span class="chip ${c}">${t}</span>`).join('');
+}
+
+/* =========================================================
+   PARTIE : démarrer un parcours (un mois de vie)
+   ========================================================= */
+function startParcours(i){
+  const P=PAR[i],practice=!!G.done[i];
+  const snap=JSON.stringify({...G,run:null});
+  if(i===0&&!practice&&!G.done[0])G.money=P.start??300;
+  G.age=P.age;G.joy=Math.round(55+(G.joy-55)*.4);if(P.onStart)P.onStart();if(G.car&&G.car.value&&P.key!=='big')G.car.value=Math.round(G.car.value*.85);
+  R=G.run={p:i,practice,snap,phase:'intro',pos:1,days:new Date(P.y,P.m+1,0).getDate(),wd0:(new Date(P.y,P.m,1).getDay()+6)%7,
+    squares:[],fixed:[],fdone:{},decks:{},log:[],spent:{},earned:0,start:{money:G.money,savings:G.savings+G.invest,joy:G.joy},minMoney:G.money,pending:null,rot:{x:0,y:0},paid:false};
+  G.screen='board';save();showBoard();
+  openIntro();
+}
+function buildBoard(){
+  const P=PAR[R.p];R.fixed=P.fixed();const lv=LV(),W={...WEIGHTS,event:WEIGHTS.event*[.7,1,1.4][lv-1],luck:WEIGHTS.luck*[1.4,1,.8][lv-1]};
+  for(let d=1;d<=R.days;d++){
+    const wd=(R.wd0+d-1)%7,fx=R.fixed.filter(f=>f.d===d);let type;
+    if(d===1)type='start';else if(d===R.days)type='pay';else if(fx.length)type='fixed';else if(wd===6)type='rest';else if(wd===5)type='sortie';
+    else{const tot=Object.values(W).reduce((a,b)=>a+b,0);let r=Math.random()*tot;type='choice';for(const[k,w]of Object.entries(W)){r-=w;if(r<=0){type=k;break}}}
+    R.squares.push({d,type,wd});
+  }
+}
+function cardsOf(type){const P=PAR[R.p],lv=LV();return[...(P.deck[type]||[]),...(P.noCommon?[]:(COMMON[type]||[]))].filter(c=>!c.lvl||(c.lvl===1?lv<=2:lv>=c.lvl))}
+function drawCard(type){const L=cardsOf(type);
+  for(let k=0;k<40;k++){if(!R.decks[type]||!R.decks[type].length)R.decks[type]=shuffle(L.map((_,i)=>i));const i=R.decks[type].pop();if(!L[i].cond||L[i].cond(G))return i}
+  return 0;
+}
+const optsOf=c=>typeof c.o==='function'?c.o(G):c.o;
+function processFixed(d){
+  if(R.fdone[d])return;R.fdone[d]=true;
+  R.fixed.filter(f=>f.d===d).forEach(f=>{tx(f.a,`${f.ic} ${f.t}`,f.cat);toast(`${f.ic} ${f.t} : ${sign(f.a)}`,f.a<0?'neg':'pos');beep(f.a<0?'step':'coin')});
+}
+function openIntro(){
+  const c=introOf(PAR[R.p]);R.pending={intro:true};save();
+  showCard(c,{n:'Nouveau chapitre',tc:PAR[R.p].col},null);
+}
+async function roll(){
+  if(!R||R.busy||R.phase!=='play'||R.pending)return;R.busy=true;renderControls();
+  const n=1+Math.floor(Math.random()*6);beep('dice');
+  const face={1:[0,0],2:[0,-90],3:[-90,0],4:[90,0],5:[0,90],6:[0,180]}[n];
+  R.rot.x=Math.round(R.rot.x/360)*360+720+face[0];R.rot.y=Math.round(R.rot.y/360)*360+720+face[1];
+  const d=$('#dice');if(d)d.style.transform=`rotateX(${R.rot.x}deg) rotateY(${R.rot.y}deg)`;
+  await sleep(1050);
+  for(let s=0;s<n&&R.pos<R.days;s++){R.pos++;placePawn(true);beep('step');await sleep(270);processFixed(R.pos);updateHud()}
+  R.busy=false;save();renderBoard();land();
+}
+function land(){
+  const sq=R.squares[R.pos-1];
+  if(R.pos>=R.days)return payday();
+  if(sq.type==='rest'){G.joy=clamp(G.joy+2,0,100);toast('☀️ Dimanche : repos ! +2 😊','pos');save();renderBoard();return}
+  if(sq.type==='fixed'||sq.type==='start')return;
+  const idx=drawCard(sq.type);R.pending={type:sq.type,idx};save();
+  const card=cardsOf(sq.type)[idx];
+  if(card.pre&&!R.pending.preDone){apply(card.pre);R.pending.preDone=true}
+  showCard(card,TYPES[sq.type],sq);
+}
+function showCard(card,meta,sq){
+  const OPTS=optsOf(card),isQuiz=!OPTS[0]||typeof OPTS[0]==='string';
+  const day=sq?`${JOURS[sq.wd]} ${sq.d}`:`${MOIS[PAR[R.p].m]} · ${PAR[R.p].age} ans`;
+  const q=typeof card.q==='function'?card.q(G):card.q;
+  const opts=OPTS.map((o,i)=>{
+    if(isQuiz)return`<button class="opt" data-a="choose" data-v="${i}"><span>${o}</span></button>`;
+    const dis=(o.need&&G.money+G.savings<o.need)||!!o.deny;
+    return`<button class="opt" data-a="choose" data-v="${i}" ${dis?'disabled':''}><span>${o.t}${o.s?`<small>${o.s}</small>`:''}${o.deny?`<small class="neg">${o.deny}</small>`:dis?'<small>💸 Pas assez d’argent</small>':''}</span><span class="chips">${chips(o.fx)}</span></button>`}).join('');
+  modal(`<div class="sh"><div class="ty"><span>${meta.ic||''} ${meta.n}</span><span>${day}</span></div><div class="em">${card.e||'🧠'}</div><h3>${card.t||'Question'}</h3></div>
+    <div class="sb"><p>${q}</p><div class="opts">${opts}</div></div>`,meta.tc||PAR[R.p].col);
+}
+function choose(i){
+  if(!R||!R.pending||R.pending.res)return;i=+i;
+  const pd=R.pending,intro=pd.intro,card=intro?introOf(PAR[R.p]):cardsOf(pd.type)[pd.idx];
+  const OPTS=optsOf(card),isQuiz=typeof OPTS[0]==='string';let ok,f,title;
+  if(isQuiz){ok=i===card.a?1:0;f=(ok?'':`La bonne réponse : <b>${card.o[card.a]}</b>. `)+card.f;if(ok)G.joy=clamp(G.joy+3,0,100)}
+  else{const o=OPTS[i];if((o.need&&G.money+G.savings<o.need)||o.deny)return;ok=o.ok;f=o.f;apply(o.fx,`${card.e||''} ${card.t}`);if(G._note){f=G._note+' '+f;delete G._note}}
+  beep(ok===1?'ok':ok===0?'bad':'coin');
+  const v=ok===1?['good',isQuiz?'Bonne réponse ! +3 😊':'Bon réflexe ! 👍']:ok===0?['bad',isQuiz?'Raté !':'Aïe… 😬']:['neu','C’est ton choix 🤷'];
+  pd.res=true;save();
+  const meta=intro?{tc:PAR[R.p].col}:TYPES[pd.type];
+  modal(`<div class="sh"><div class="ty"><span>${intro?'Nouveau chapitre':meta.ic+' '+meta.n}</span></div><div class="em">${card.e||'🧠'}</div><h3>${card.t||'Question'}</h3></div>
+    <div class="sb"><div class="verdict ${v[0]}"><b>${v[1]}</b><p>💡 ${f}</p></div>
+    <div class="row"><span>💳 Compte</span><b class="${G.money<0?'neg':''}">${fmt(G.money)}</b></div><div class="row"><span>🐷 Épargne</span><b>${fmt(G.savings)}</b></div>
+    <button class="btn" data-a="cont">Continuer</button></div>`,meta.tc||PAR[R.p].col);
+  updateHud();
+}
+function cont(){
+  closeModal();if(!R)return;
+  const intro=R.pending&&R.pending.intro;R.pending=null;
+  if(intro){buildBoard();R.phase='play';processFixed(1);save();renderBoard();
+    toast(`🎲 Lance le dé pour avancer dans le mois !`);return}
+  save();renderBoard();
+}
+
+/* ---------- Jour de paie et bilan ---------- */
+function payday(){
+  if(R.phase==='pay'||R.phase==='bilan')return showBilanOrPay();
+  R.phase='pay';
+  if(!R.paid){R.paid=true;const s=salary(R.p);tx(s,'💶 '+(PAR[R.p].payName||'Salaire'),'revenu');beep('coin');
+    if(G.autoSave)toSav(G.autoSave,'🔁 Épargne automatique');
+    if(PAR[R.p].key==='future'&&G.invest>0){const r=rnd(-.02,.05);G.invest*=1+r;R.mkt=r}}
+  R.payPct=R.payPct??(G.autoSave?0:.1);save();renderBoard();showPay();
+}
+function showBilanOrPay(){R.phase==='pay'?showPay():showBilan()}
+function showPay(){
+  const s=salary(R.p),pcts=[0,.1,.2,.3],avail=Math.max(0,G.money);
+  modal(`<div class="sh"><div class="ty"><span>💶 Jour de paie</span><span>${JOURS[R.squares[R.days-1].wd]} ${R.days}</span></div><div class="em">💶</div><h3>${PAR[R.p].payName?PAR[R.p].payName+' : c’est arrivé !':'Ton salaire est arrivé !'}</h3></div>
+  <div class="sb"><p><b class="pos">+${fmt(s)}</b> sur ton compte.${G.autoSave?` Ton épargne automatique de ${fmt(G.autoSave)} est déjà partie dans ta tirelire 🐷`:''}<br>Combien veux-tu mettre de côté <b>tout de suite</b>, avant de dépenser ?</p>
+  <div class="amts">${pcts.map(p=>`<button class="${R.payPct===p?'on':''}" data-a="payPct" data-v="${p}">${p*100} %<br><small>${fmt(Math.min(avail,s*p))}</small></button>`).join('')}</div>
+  <p style="font-size:13px;color:var(--muted);margin:8px 0 0">💡 « Se payer en premier » : on épargne le jour de la paie, pas avec ce qui reste à la fin.</p>
+  <button class="btn" data-a="payOk">Voir mon bilan du mois</button></div>`,'#24A866');
+}
+function showBilan(){
+  const P=PAR[R.p],saved=G.savings+G.invest-R.start.savings;
+  const st=[R.minMoney>=0,saved>=goalOf(P),G.joy>=60];
+  const n=st.filter(Boolean).length;
+  const spent=Object.entries(R.spent).filter(([k,v])=>v>0&&CATS[k]).sort((a,b)=>b[1]-a[1]);
+  const totalSpent=spent.reduce((a,[,v])=>a+v,0);
+  modal(`<div class="sh" style="text-align:center"><div class="ty"><span>Bilan du mois</span><span>${MOIS[P.m]} ${P.y}</span></div><h3 style="margin-top:8px">${P.ic} ${P.t}</h3>
+    <div class="stars">${st.map((s,i)=>`<span class="${s?'on':''}" style="animation-delay:${i*.18}s">⭐</span>`).join('')}</div></div>
+  <div class="sb">
+    <div class="row"><span>${st[0]?'✅':'❌'} Jamais dans le rouge</span><b class="${R.minMoney<0?'neg':''}">${R.minMoney<0?'découvert '+fmt(R.minMoney):'bravo'}</b></div>
+    <div class="row"><span>${st[1]?'✅':'❌'} Mettre ${fmt(goalOf(P))} de côté</span><b class="${saved>=0?'sav':'neg'}">${sign(saved)}</b></div>
+    <div class="row"><span>${st[2]?'✅':'❌'} Garder le moral (😊 60+)</span><b>${Math.round(G.joy)}</b></div>${coachHTML(st)}
+    <div class="sec" style="margin:16px 0 4px">Où est parti ton argent ?</div>
+    <div class="slist">${spent.map(([k,v])=>`<div class="row"><span>${CATS[k]}</span><span class="neg">−${fmt(v)}</span></div>`).join('')||'<div class="row muted">Aucune dépense</div>'}
+    <div class="row"><b>Total des dépenses</b><b class="neg">−${fmt(totalSpent)}</b></div><div class="row"><b>Total des revenus</b><b class="pos">+${fmt(R.earned)}</b></div></div>
+    ${R.mkt!=null?`<div class="row"><span>📈 Bourse ce mois-ci</span><b class="${R.mkt>=0?'pos':'neg'}">${R.mkt>=0?'+':''}${(R.mkt*100).toFixed(1).replace('.',',')} %</b></div>`:''}
+    <div class="sec" style="margin:16px 0 4px">À la fin du mois</div>
+    <div class="row"><span>💳 Compte</span><b class="${G.money<0?'neg':''}">${fmt(G.money)}</b></div><div class="row"><span>🐷 Épargne</span><b>${fmt(G.savings)}</b></div>
+    ${G.invest>0?`<div class="row"><span>📈 Placements</span><b>${fmt(G.invest)}</b></div>`:''}
+    ${R.practice?'<p style="font-size:13px;color:var(--muted);margin:12px 0 0">🔁 Mode entraînement : ton argent revient comme avant ce mois-ci, seules tes étoiles comptent.</p>':''}
+    <button class="btn" data-a="finish" data-v="${n}">${R.practice?'Retour en ville':R.p<PAR.length-1?'Retour en ville 🏙️':'Voir ma vie 🎓'}</button>
+    <button class="btn ghost" data-a="replay">Rejouer ce mois</button></div>`,P.col);
+  if(n===3)confetti();beep('win');
+}
+function finish(n){
+  const i=R.p,practice=R.practice,first=!G.done[i];
+  const best=Math.max(G.stars[i]||0,+n);
+  if(practice){const keep={char:G.char,sound:G.sound,stars:G.stars,done:G.done};G={...fresh(),...JSON.parse(R.snap),...keep}}
+  G.stars[i]=best;G.done[i]=true;
+  if(first)G.history.push({p:i,age:PAR[i].age,w:wealth()});
+  G.run=null;R=null;G.screen='city';
+  if(first&&i<PAR.length-1)G.age=PAR[i+1].age;
+  save();closeModal();
+  wipe('#8DB36B','🏙️',()=>{showCity();
+  if(first&&i===PAR.length-1)return showFinale();
+  if(first){confetti();toast(`🔓 Nouveau parcours : ${PAR[i+1].ic} ${PAR[i+1].t}`);city&&city.focus(i+1);
+    if(!isStandalone()&&!G.instShown){G.instShown=true;save();setTimeout(()=>installModal(),2400)}}});
+}
+function replay(){const i=R.p;const keep={char:G.char,sound:G.sound,stars:G.stars,done:G.done};G={...fresh(),...JSON.parse(R.snap),...keep};
+  G.run=null;R=null;closeModal();startParcours(i)}
+
+/* ---------- Final : projection vers l'avenir ---------- */
+function showFinale(){
+  const w=wealth(),stars=Object.values(G.stars).reduce((a,b)=>a+b,0);
+  const m=Math.max(100,G.autoSave||Math.round(salary(PAR.length-1)*.1)),yrs=65-PAR[PAR.length-1].age,r=.05;
+  const fv=(pv,mo,y)=>pv*Math.pow(1+r,y)+mo*12*((Math.pow(1+r,y)-1)/r);
+  const a=fv(Math.max(0,G.savings+G.invest),m,yrs),b=fv(Math.max(0,G.savings+G.invest),m,yrs-10);
+  modal(`<div class="sh" style="text-align:center"><div class="em">🎓</div><h3>Bravo ${G.char?G.char.name:''} !</h3><div class="ty" style="justify-content:center;margin-top:4px">Tu as vécu ta vie de ${PAR[0].age} à ${PAR[PAR.length-1].age} ans</div></div>
+  <div class="sb"><div style="display:flex;justify-content:center;margin-bottom:8px">${avatarSVG(G.char,90)}</div>
+  <div class="row"><span>⭐ Étoiles gagnées</span><b>${stars} / ${PAR.length*3}</b></div>
+  <div class="row"><span>💰 Ce que tu possèdes à ${PAR[PAR.length-1].age} ans</span><b>${fmt(w)}</b></div>
+  <div class="row"><span>😊 Ton moral</span><b>${Math.round(G.joy)}/100</b></div>
+  ${personaRows()}<div class="verdict neu" style="margin-top:14px"><b>🔮 Et à 65 ans ?</b><p>Si tu mets <b>${fmt(m)}</b> de côté chaque mois, placés à 5 % par an, tu auras environ <b>${fmt(a)}</b> à 65 ans${G.goalTxt?` — de quoi financer ${G.goalTxt} et bien plus`:''} !<br><br>Si tu commences seulement 10 ans plus tard : <b>${fmt(b)}</b>. Le temps, c’est ton super-pouvoir ⏳</p></div>
+  <button class="btn" data-a="closeFin">Retour en ville</button></div>`,'#8B5CF6');
+  confetti();beep('win');
+}
+
+/* =========================================================
+   RENDU DU PLATEAU
+   ========================================================= */
+function showBoard(){$('#board').classList.remove('hidden');$('#city').classList.add('hidden');if(city)city.pause(true);renderBoard()}
+function showCity(){$('#board').classList.add('hidden');$('#city').classList.remove('hidden');if(city){city.pause(false);city.refreshChar()}renderCity()}
+const pips={1:[[2,2]],2:[[1,1],[3,3]],3:[[1,1],[2,2],[3,3]],4:[[1,1],[1,3],[3,1],[3,3]],5:[[1,1],[1,3],[2,2],[3,1],[3,3]],6:[[1,1],[2,1],[3,1],[1,3],[2,3],[3,3]]};
+function hudHTML(){
+  const P=PAR[R.p],saved=G.savings+G.invest-R.start.savings;
+  return`<div class="stats">
+    <div class="st ${G.money<0?'neg':''}"><small>💳 Compte</small><b id="hMoney">${fmt(G.money)}</b></div>
+    <div class="st"><small>🐷 Épargne</small><b id="hSav">${fmt(G.savings)}</b></div>
+    ${PAR[R.p].key==='future'||G.invest>0?`<div class="st"><small>📈 Placements</small><b>${fmt(G.invest)}</b></div>`:''}
+    <div class="st"><small>😊 Moral</small><b>${Math.round(G.joy)}</b><div class="joybar"><i style="width:${G.joy}%"></i></div></div></div>`;
+}
+function renderBoard(){
+  if(!R)return;const P=PAR[R.p],saved=G.savings+G.invest-R.start.savings;
+  const lead=Array.from({length:R.wd0},()=>'<div class="tile empty"></div>').join('');
+  const tiles=R.squares.map(s=>{const t=TYPES[s.type],fx=R.fixed.filter(f=>f.d===s.d);
+    const ic=s.type==='fixed'?fx[0].ic:t.ic,amt=fx.length&&s.type!=='start'?fx.reduce((a,f)=>a+f.a,0):0;
+    return`<button class="tile ${s.d<R.pos?'past':''} ${s.d===R.pos?'now':''}" style="--tc:${t.c}" data-a="tile" data-v="${s.d}"><span class="n">${s.d}</span>${ic}${amt?`<span class="amt">${sign(amt).replace(' €','€')}</span>`:''}</button>`}).join('');
+  $('#board').innerHTML=`<div class="bwrap" style="--pc:${P.col}">
+    <div class="bhead"><div class="bh1"><button class="bback" data-a="toCity">← Ville</button>
+      <div class="btitle"><b>${P.ic} ${P.t}</b><small>${MOIS[P.m]} ${P.y} · ${P.age} ans${G.job?` · ${G.job.n}`:''}</small></div><div class="bav">${avatarSVG(G.char,46)}</div></div>
+      <div id="hud">${hudHTML()}</div></div>
+    <div class="bgrid"><div class="bmain"><div class="goal">🎯 <b>Objectif :</b> mettre <b>${fmt(goalOf(P))}</b> de côté ce mois-ci <span class="muted">(${sign(saved)})</span>
+      <div class="gb"><i style="width:${clamp(saved/goalOf(P)*100,0,100)}%"></i></div></div>
+    <div class="cal" id="cal"><div class="wk">${['L','M','M','J','V','S','D'].map(x=>`<div>${x}</div>`).join('')}</div>
+      <div class="grid">${lead}${tiles}</div><div class="pawn" id="pawn">${avatarSVG(G.char,40)}</div></div></div><div class="bside"><div class="sec">Mon relevé de compte</div>
+    <div class="stmt">${R.log.length?R.log.slice().reverse().map(l=>`<div class="r"><span><span class="d">${l.d} ${MC[P.m]}</span>${l.t}</span><b class="${l.cat==='epargne'?'sav':l.a<0?'neg':'pos'}">${l.a?sign(l.a):'✓'}</b></div>`).join(''):'<div class="r muted">Rien pour l’instant. Lance le dé !</div>'}</div></div></div>
+  </div>
+  <div class="controls" style="--pc:${P.col}"><div class="in" id="ctrl"></div></div>`;
+  renderControls();requestAnimationFrame(()=>placePawn(false));
+}
+function renderControls(){
+  const c=$('#ctrl');if(!c||!R)return;
+  const faces=[1,2,3,4,5,6].map(n=>`<div class="face f${n}">${pips[n].map(([r,cc])=>`<i style="grid-area:${r}/${cc}"></i>`).join('')}</div>`).join('');
+  const done=R.phase==='pay'||R.phase==='bilan';
+  c.innerHTML=`<div class="dwrap"><div class="dice" id="dice" style="transform:rotateX(${R.rot.x}deg) rotateY(${R.rot.y}deg)">${faces}</div></div>
+    <button class="rollbtn" data-a="${done?'bilan':'roll'}" ${R.busy||(R.phase==='play'&&R.pending)?'disabled':''}>${done?'📊 Voir mon bilan':R.busy?'…':'🎲 Lancer le dé'}</button>
+    <button class="sqbtn" data-a="piggy"><span>🐷</span>Épargne</button>`;
+}
+function updateHud(){const h=$('#hud');if(h&&R)h.innerHTML=hudHTML()}
+function placePawn(hop){
+  const p=$('#pawn'),t=document.querySelector(`.tile[data-v="${R.pos}"]`),cal=$('#cal');if(!p||!t||!cal)return;
+  p.style.left=(t.offsetLeft+t.offsetWidth/2-20)+'px';p.style.top=(t.offsetTop+t.offsetHeight/2-24)+'px';
+  document.querySelectorAll('.tile.now').forEach(x=>x.classList.remove('now'));t.classList.add('now');
+  document.querySelectorAll('.tile').forEach(x=>{const v=+x.dataset.v;if(v)x.classList.toggle('past',v<R.pos)});
+  if(hop){p.classList.remove('hop');void p.offsetWidth;p.classList.add('hop')}
+}
+function tileInfo(d){
+  const s=R.squares[d-1],fx=R.fixed.filter(f=>f.d===d);
+  if(s.type==='fixed'||(s.type==='start'&&fx.length))toast(`Le ${d} : ${fx.map(f=>`${f.ic} ${f.t} ${sign(f.a)}`).join(' · ')}`);
+  else if(s.type==='pay')toast(`Le ${d} : 💶 Jour de paie (+${fmt(salary(R.p))})`);
+  else toast(`Le ${d} : ${TYPES[s.type].ic} ${TYPES[s.type].n}`);
+}
+function piggy(){
+  const inv=R&&PAR[R.p].key==='future';
+  modal(`<div class="sh"><div class="em">🐷</div><h3>Ma tirelire</h3></div><div class="sb">
+    <div class="row"><span>💳 Compte</span><b class="${G.money<0?'neg':''}">${fmt(G.money)}</b></div><div class="row"><span>🐷 Épargne</span><b>${fmt(G.savings)}</b></div>
+    ${inv?`<div class="row"><span>📈 Placements</span><b>${fmt(G.invest)}</b></div>`:''}
+    <div class="lbl" style="margin-top:12px">Mettre de côté</div><div class="amts">${[50,100,200].map(v=>`<button data-a="sav" data-v="${v}">+${v} €</button>`).join('')}<button data-a="sav" data-v="all">Tout</button></div>
+    <div class="lbl" style="margin-top:8px">Reprendre de l’épargne</div><div class="amts">${[50,100,200].map(v=>`<button data-a="unsav" data-v="${v}">−${v} €</button>`).join('')}<button data-a="unsav" data-v="all">Tout</button></div>
+    ${inv?`<div class="lbl" style="margin-top:8px">Investir en bourse 📈</div><div class="amts">${[50,100,200].map(v=>`<button data-a="inv" data-v="${v}">+${v} €</button>`).join('')}<button data-a="inv" data-v="all">Tout</button></div>`:''}
+    <p style="font-size:13px;color:var(--muted);margin:10px 0 0">💡 Garde assez sur ton compte pour payer les prochaines factures (regarde les cases 🧾 du calendrier) !</p>
+    <button class="btn" data-a="close">Fermer</button></div>`,'#3F3FD4');
+}
+
+/* =========================================================
+   VILLE : interface
+   ========================================================= */
+let city=null;
+function bubState(i){const n=nextIdx();return G.done[i]?'done':i===n?'active':i===n+1?'locked':'off'}
+function renderCity(){
+  $('#calAge').textContent=`${G.age} ans · ${G.char?G.char.name:''}`;
+  $('#wMoney').textContent=fmt(G.money);
+  const n=Object.keys(G.done).length;$('#ringArc').setAttribute('stroke-dashoffset',150.8*(1-Math.max(.04,n/PAR.length)));
+  $('#wAv').innerHTML=avatarSVG(G.char,76);
+  PAR.forEach((P,i)=>{const b=document.getElementById('bub'+i);if(!b)return;const st=bubState(i);
+    b.className='bub '+st;b.innerHTML=`<span class="ico">${P.ic}</span><span class="lb">${P.t}</span>${st==='done'?'<span class="badge">✓</span>':st==='locked'||st==='off'?'<span class="badge">🔒</span>':''}`;});
+  const bd=$('#bubDream');if(bd&&G.persona){const d=DREAMS[G.persona.dream];bd.innerHTML=`<span class="ico">${d.ic}</span><span class="lb">Mon rêve · </span>${dreamPct()} %`}
+  const tg=$('#chartag');if(tg)tg.textContent=G.char?G.char.name:'Moi';
+}
+function makeBubbles(){
+  const L=$('#labels');L.innerHTML=PAR.map((P,i)=>`<button class="bub" id="bub${i}" data-a="par" data-v="${i}"></button>`).join('')+(G.persona?`<button class="bub dream" id="bubDream" data-a="dream"></button>`:'')+`<div class="tag3d" id="chartag"></div>`;
+}
+function openPar(i){
+  i=+i;const P=PAR[i],st=bubState(i),stars=G.stars[i]||0;
+  if(st==='locked'||st==='off'){beep('bad');return modal(`<div class="sh" style="--tc:#8A8FA3"><div class="em">🔒</div><h3>${P.t}</h3></div><div class="sb"><p>Ce bâtiment ouvrira quand tu auras terminé <b>« ${PAR[nextIdx()].t} »</b>.</p><button class="btn ghost" data-a="close">OK</button></div>`)}
+  beep('ok');
+  modal(`<div class="sh"><div class="ty"><span>Parcours ${i+1} · ${P.place}</span><span>${P.age} ans</span></div><div class="em">${P.ic}</div><h3>${P.t}</h3></div>
+  <div class="sb"><p>${P.desc}</p>
+    <div class="row"><span>📅 Mois</span><b>${MOIS[P.m]} ${P.y}</b></div>
+    <div class="row"><span>🎯 Objectif</span><b>${fmt(goalOf(P))} de côté</b></div>
+    ${G.done[i]?`<div class="row"><span>Meilleur score</span><b>${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</b></div>`:''}
+    <button class="btn" data-a="start" data-v="${i}">${G.done[i]?'🔁 Rejouer (entraînement)':'🎲 Commencer le mois'}</button>
+    <button class="btn ghost" data-a="close">Plus tard</button></div>`,P.col);
+}
+function creator(first){
+  const c={...(G.char||DEF_CHAR)};window._cc=c;
+  const draw=()=>{const cc=window._cc;modal(`<div class="sh" style="text-align:center"><h3>${first?'Crée ton personnage':'Mon personnage'}</h3><div class="ty" style="justify-content:center;margin-top:2px">${first?'C’est toi qui vas vivre cette vie !':''}</div></div>
+    <div class="sb"><div style="display:flex;justify-content:center;margin:-4px 0 10px">${avatarSVG(cc,110)}</div>
+    <div class="lbl">Prénom</div><input class="name" id="cname" maxlength="14" value="${cc.name.replace(/"/g,'')}" oninput="window._cc.name=this.value">
+    <div class="lbl">Peau</div><div class="sw">${SKINS.map(s=>`<button style="background:${s}" class="${cc.skin===s?'on':''}" data-a="cset" data-v="skin|${s}" aria-label="Peau"></button>`).join('')}</div>
+    <div class="lbl">Cheveux</div><div class="sw">${HAIRS.map(s=>`<button style="background:${s}" class="${cc.hair===s?'on':''}" data-a="cset" data-v="hair|${s}" aria-label="Couleur de cheveux"></button>`).join('')}</div>
+    <div class="lbl">Coiffure</div><div class="sw">${STYLES.map(([k,l])=>`<button class="tx ${cc.style===k?'on':''}" data-a="cset" data-v="style|${k}">${l}</button>`).join('')}</div>
+    <div class="lbl">Haut</div><div class="sw">${TOPS.map(s=>`<button style="background:${s}" class="${cc.top===s?'on':''}" data-a="cset" data-v="top|${s}" aria-label="Couleur du haut"></button>`).join('')}</div>
+    <button class="btn" data-a="csave">${first?'C’est moi ! Entrer dans la ville 🏙️':'Enregistrer'}</button></div>`)};
+  window._ccDraw=draw;draw();
+}
+
+/* =========================================================
+   VILLE 3D (Three.js)
+   ========================================================= */
+function initCity(){
+  if(!window.THREE)return null;
+  const MOBILE=matchMedia('(pointer:coarse)').matches||innerWidth<760;
+  let renderer;
+  try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'})}catch(e){return null}
+  if(!renderer.getContext())return null;
+  const el=$('#city');let DPR=Math.min(MOBILE?1.6:2,window.devicePixelRatio||1);
+  renderer.setPixelRatio(DPR);renderer.setClearColor(0x000000,0);
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  el.insertBefore(renderer.domElement,$('#fallback'));
+  const scene=new THREE.Scene();const PLACE=(G.persona&&G.persona.place)||'town';
+  const cam=new THREE.OrthographicCamera(-1,1,1,-1,-200,400);
+  const hemi=new THREE.HemisphereLight(0xffffff,0x6f8f55,.8);scene.add(hemi);
+  const sun=new THREE.DirectionalLight(0xfff6e8,.75);sun.castShadow=true;const SMAP=MOBILE?1024:2048;sun.shadow.mapSize.set(SMAP,SMAP);
+  Object.assign(sun.shadow.camera,{left:-40,right:40,top:40,bottom:-40,near:1,far:180});sun.shadow.bias=-.0006;scene.add(sun);scene.add(sun.target);
+
+  /* ---------- Outils de construction ---------- */
+  const MAT={};const M=c=>MAT[c]||(MAT[c]=new THREE.MeshLambertMaterial({color:c}));
+  const sh=m=>{m.castShadow=true;m.receiveShadow=true;return m};
+  const add=(m,p=scene)=>{p.add(m);return m};
+  const mat=c=>(Array.isArray(c)||(c&&c.isMaterial))?c:M(c);
+  function box(w,h,d,c,x,y,z,p){const m=sh(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c)));m.position.set(x,y+h/2,z);return add(m,p)}
+  function cyl(rt,rb,h,c,x,y,z,p,seg=16){const m=sh(new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat(c)));m.position.set(x,y+h/2,z);return add(m,p)}
+  function cone(r,h,c,x,y,z,p,seg=8){const m=sh(new THREE.Mesh(new THREE.ConeGeometry(r,h,seg),mat(c)));m.position.set(x,y+h/2,z);return add(m,p)}
+  function flat(w,d,c,x,y,z,p){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat(c));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);m.receiveShadow=true;return add(m,p)}
+  function roof4(r,h,c,x,y,z,p){const m=sh(new THREE.Mesh(new THREE.ConeGeometry(r,h,4),mat(c)));m.position.set(x,y+h/2,z);m.rotation.y=Math.PI/4;return add(m,p)}
+  const cvs=(w,h,fn)=>{const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);return c};
+
+  /* Reflets : petite carte d'environnement (ciel + sol) */
+  const envFace=()=>cvs(32,32,g=>{const gr=g.createLinearGradient(0,0,0,32);gr.addColorStop(0,'#8CC8FF');gr.addColorStop(.5,'#F2F8FF');gr.addColorStop(.56,'#A7C58A');gr.addColorStop(1,'#6E8F55');g.fillStyle=gr;g.fillRect(0,0,32,32)});
+  const env=new THREE.CubeTexture([envFace(),envFace(),envFace(),envFace(),envFace(),envFace()]);env.needsUpdate=true;
+  const water=new THREE.MeshPhongMaterial({color:'#5FA8DC',specular:'#FFFFFF',shininess:120,envMap:env,reflectivity:.45,combine:THREE.MixOperation});
+  const chrome=c=>new THREE.MeshPhongMaterial({color:c,specular:0x777777,shininess:70,envMap:env,reflectivity:.18,combine:THREE.MixOperation});
+
+  /* Fenêtres : texture de jour + texture de nuit (fenêtres allumées) */
+  const NIGHT=[],GLOWS=[],TEXC={};
+  function winTex(wall,win,rw,rh,lit){const k=[wall,win,rw,rh,lit].join();if(TEXC[k])return TEXC[k];
+    const t=new THREE.CanvasTexture(cvs(128,128,x=>{x.fillStyle=lit?'#000':wall;x.fillRect(0,0,128,128);
+      for(let i=0;i<2;i++)for(let j=0;j<2;j++){const X=i*64+12,Y=j*64+14;
+        if(lit){if(Math.random()<.62){x.fillStyle=Math.random()<.8?'#FFCB6B':'#CFE6FF';x.fillRect(X,Y,40,32)}}
+        else{x.fillStyle=win;x.fillRect(X,Y,40,32);x.fillStyle='rgba(255,255,255,.45)';x.fillRect(X,Y,40,7);x.fillStyle='rgba(0,0,0,.13)';x.fillRect(X-3,Y+32,46,4)}}}));
+    t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rw,rh);return TEXC[k]=t}
+  function tower(w,h,d,wall,win,roof,x,z,p,y=0,glass){
+    const mk=len=>{const rw=Math.max(1,Math.round(len/2.8)),rh=Math.max(1,Math.round(h/3.4));
+      const m=new THREE.MeshPhongMaterial({map:winTex(wall,win,rw,rh,0),emissive:0xffffff,emissiveMap:winTex(wall,win,rw,rh,1),emissiveIntensity:0,
+        specular:glass?0x8899aa:0x1a1a1a,shininess:glass?90:8,envMap:glass?env:null,reflectivity:glass?.3:0,combine:THREE.MixOperation});NIGHT.push(m);return m};
+    const sx=mk(d),sz=mk(w),top=M(roof);
+    const m=sh(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),[sx,sx,top,top,sz,sz]));m.position.set(x,y+h/2,z);add(m,p);
+    box(w+.24,.28,d+.24,roof,x,y+h-.02,z,p);
+    if(h>6&&w>2.6){box(w*.3,.6,d*.25,'#C9CED8',x-w*.18,y+h+.26,z+d*.12,p);cyl(.05,.05,1.4,'#8A8F9C',x+w*.3,y+h+.26,z-d*.3,p,5)}
+    return m}
+  function sign(text,bg,fg,w,h,x,y,z,ry,p){const c=cvs(512,Math.round(512*h/w),(g,W,H)=>{g.fillStyle=bg;g.fillRect(0,0,W,H);g.fillStyle=fg;let fs=Math.round(H*.55);g.font=`900 ${fs}px Nunito, Arial, sans-serif`;
+      while(g.measureText(text).width>W*.9&&fs>10){fs-=4;g.font=`900 ${fs}px Nunito, Arial, sans-serif`}g.textAlign='center';g.textBaseline='middle';g.fillText(text,W/2,H/2+4)});
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}));m.position.set(x,y,z);m.rotation.y=ry||0;return add(m,p)}
+  /* Halos lumineux (lampadaires, phares, fenêtres) */
+  const glowTex=new THREE.CanvasTexture(cvs(64,64,g=>{const r=g.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.3,'rgba(255,255,255,.45)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,64,64)}));
+  function glow(color,size,x,y,z,p,k=1){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));s.scale.set(size,size,1);s.position.set(x,y,z);s.userData.k=k;add(s,p);GLOWS.push(s);return s}
+  function pool(x,z,size=4.5){const m=new THREE.Mesh(new THREE.PlaneGeometry(size,size),new THREE.MeshBasicMaterial({map:glowTex,color:'#FFC870',transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(x,.06,z);m.userData.k=.55;scene.add(m);GLOWS.push(m)}
+  const BULB=new THREE.MeshBasicMaterial({color:'#DADDE5'});
+  function lamp(x,z){cyl(.07,.09,2.4,'#3E4252',x,0,z,undefined,6);const b=new THREE.Mesh(new THREE.SphereGeometry(.17,10,8),BULB);b.position.set(x,2.5,z);scene.add(b);glow('#FFD58A',3.4,x,2.45,z);pool(x,z)}
+  const occ=[];const reg=(x,z,w,d)=>occ.push([x-w/2,x+w/2,z-d/2,z+d/2]);
+
+  /* ---------- Île flottante ---------- */
+  const sideTex=new THREE.CanvasTexture(cvs(64,64,g=>{g.fillStyle='#8B6A48';g.fillRect(0,0,64,64);g.fillStyle='#7FA862';g.fillRect(0,0,64,8);g.fillStyle='#5E8A47';g.fillRect(0,8,64,3);
+    for(let i=0;i<46;i++){g.fillStyle=Math.random()<.5?'#7A5C3E':'#A07E58';g.fillRect(Math.random()*64,14+Math.random()*40,3+Math.random()*7,2+Math.random()*3)}g.fillStyle='#6B5038';g.fillRect(0,54,64,10)}));
+  sideTex.wrapS=THREE.RepeatWrapping;sideTex.repeat.set(10,1);
+  const dirt=new THREE.MeshLambertMaterial({map:sideTex});
+  const isl=new THREE.Mesh(new THREE.BoxGeometry(70,6,70),[dirt,dirt,M('#8DB36B'),M('#5E4632'),dirt,dirt]);isl.position.y=-3;isl.receiveShadow=true;scene.add(isl);
+  const rock=new THREE.Mesh(new THREE.CylinderGeometry(31,10,16,8,2),M('#6B5038'));rock.position.y=-14;rock.rotation.y=Math.PI/8;scene.add(rock);
+  for(let i=0;i<14;i++){const a=i/14*Math.PI*2;const m=new THREE.Mesh(new THREE.DodecahedronGeometry(rnd(2,4),0),M(i%2?'#7A5C40':'#5E4632'));m.position.set(Math.cos(a)*rnd(18,26),rnd(-20,-12),Math.sin(a)*rnd(18,26));scene.add(m)}
+  for(let i=0;i<12;i++)flat(rnd(4,9),rnd(4,9),i%2?'#86AD64':'#93BA72',rnd(-30,30),.008,rnd(-30,30)).rotation.z=rnd(0,3);
+
+  /* ---------- Routes, trottoirs, marquages ---------- */
+  const ROADS=[-21,-7,7,21],LEN=70;
+  ROADS.forEach(c=>{flat(3,LEN,'#6E9A55',c,.02,0);flat(LEN,3,'#6E9A55',0,.025,c);
+    [-1.9,1.9].forEach(o=>{flat(.7,LEN,'#B7D09A',c+o,.018,0);flat(LEN,.7,'#B7D09A',0,.019,c+o)})});
+  {const geo=new THREE.PlaneGeometry(.16,1.1);geo.rotateX(-Math.PI/2);const dm=M('#B4D29A');const n=ROADS.length*31;
+   const a=new THREE.InstancedMesh(geo,dm,n),b=new THREE.InstancedMesh(geo,dm,n);const o=new THREE.Object3D();let i=0;
+   ROADS.forEach(c=>{for(let k=-34;k<34;k+=2.2){o.position.set(c,.04,k+.55);o.rotation.set(0,0,0);o.updateMatrix();a.setMatrixAt(i,o.matrix);
+     o.position.set(k+.55,.045,c);o.rotation.set(0,Math.PI/2,0);o.updateMatrix();b.setMatrixAt(i,o.matrix);i++}});
+   a.count=b.count=i;scene.add(a,b)}
+
+  /* ---------- Place centrale ---------- */
+  const plaza=new THREE.Mesh(new THREE.CylinderGeometry(5.2,5.2,.12,48),M('#EADFC6'));plaza.position.y=.06;plaza.receiveShadow=true;scene.add(plaza);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(4.3,.12,6,48),M('#D8C9A8'));ring.rotation.x=-Math.PI/2;ring.position.y=.13;scene.add(ring);
+  cyl(1.25,1.35,.5,'#C9CED8',-2.9,.1,-2.9);const fw=new THREE.Mesh(new THREE.CylinderGeometry(1.05,1.05,.06,32),water);fw.position.set(-2.9,.62,-2.9);scene.add(fw);
+  cyl(.18,.25,1.1,'#C9CED8',-2.9,.5,-2.9);cyl(.55,.2,.2,'#C9CED8',-2.9,1.55,-2.9);
+  [[3.5,-1.5],[-1.5,3.5],[3,2.6]].forEach(([x,z])=>{box(1.4,.25,.45,'#B5835A',x,.35,z);box(.12,.35,.4,'#555',x-.55,.12,z);box(.12,.35,.4,'#555',x+.55,.12,z)});
+  [[4.4,-3.2],[-3.2,4.4],[4.6,4.2],[-4.4,-.5]].forEach(([x,z])=>lamp(x,z));
+  {const n=44,fl=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.17,0),new THREE.MeshLambertMaterial({color:'#ffffff'}),n),o=new THREE.Object3D(),C=['#FF6B8A','#FFD166','#9B7BFF','#FFFFFF'];
+   for(let a=0;a<n;a++){const t=a/n*Math.PI*2;o.position.set(Math.cos(t)*4.75,.25,Math.sin(t)*4.75);o.updateMatrix();fl.setMatrixAt(a,o.matrix);fl.setColorAt(a,new THREE.Color(C[a%4]))}scene.add(fl)}
+  const bb=new THREE.Group();box(.18,2.6,.18,'#6B7080',-1.5,0,0,bb);box(.18,2.6,.18,'#6B7080',1.5,0,0,bb);box(4.2,2,.2,'#FFFFFF',0,2.4,0,bb);
+  sign('MA VIE, MES CHOIX','#FFFFFF','#3F3FD4',3.9,1.7,0,3.4,.11,0,bb);bb.position.set(1.8,0,-4.3);bb.rotation.y=Math.PI/4;scene.add(bb);glow('#FFFFFF',4,1.8,3.4,-4.1,undefined,.35);
+  reg(0,0,11,11);
+
+  /* ---------- Bâtiments des parcours ---------- */
+  const LOTG={};
+  function lot(x,z){const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);reg(x,z,11,11);return g}
+  // Bureau : tour de verre
+  {const g=lot(-14,0);tower(5,13,5,'#4E7FE0','#BFD9FF','#2F4F9E',-1.4,-1.2,g,0,true);tower(8,4,4,'#E7EDF6','#7FA7E6','#C2CBDA',.6,3,g);
+   cyl(.08,.08,2.4,'#999',-1.4,13.3,-1.2,g,6);glow('#FF5050',.9,-1.4,15.8,-1.2,g,1.2);box(2.4,.1,1.8,'#CDD5E3',2.8,4,3,g);
+   sign('BUREAU','#3F3FD4','#FFFFFF',3,.8,.6,3.4,5.02,0,g);flat(9,2.4,'#9FB7A0',.6,.06,5,g);box(1.4,1.6,.12,chrome('#9AD1EE'),.6,0,5.02,g);
+   LOTG.work={g,h:14.6}}
+  // Résidence
+  {const g=lot(-14,-14);tower(4,10,4,'#F3F5F9','#6FA8DC','#7FB77E',-2,-2,g);tower(4,7,4,'#DCE8F5','#5C93CC','#7FB77E',2.4,2,g);tower(3.5,5,3.5,'#FBEBD9','#E39B5C','#C96F3B',-2.3,2.7,g);
+   for(let k=1;k<5;k++){box(4.3,.12,.6,'#FFFFFF',-2,k*2,.3,g);box(4.3,.5,.05,chrome('#CFE6F5'),-2,k*2+.12,.58,g)}
+   for(let k=0;k<5;k++)cone(.35,.8,'#3F8F4A',3.6,0,-3.5+k*.9,g,6);LOTG.home={g,h:11.4}}
+  // Marché
+  {const g=lot(0,-14);box(9,3.2,6,'#C9D86B',0,0,-1.5,g);box(9.2,.3,6.2,'#F3F0E3',0,3.2,-1.5,g);
+   for(let k=0;k<10;k++)box(.9,.25,1.1,k%2?'#FFFFFF':'#E5484D',-4.05+k*.9,2.3,2,g);box(5,1.9,.08,chrome('#BFE3F2'),0,0,1.52,g);
+   sign('MARCHÉ','#2DB36F','#FFFFFF',3.4,.9,0,3.9,1.52,0,g);glow('#9CFFB8',3.2,0,3.9,1.7,g,.6);
+   flat(10,3.6,'#7E9C6E',0,.05,3.6,g);for(let k=-4;k<=4;k+=2)flat(.1,1.6,'#FFFFFF',k,.07,3.9,g);
+   [[-3,3.8,'#3F3FD4'],[1,3.8,'#F7A23B']].forEach(([x,z,c])=>{box(1.6,.5,.9,chrome(c),x,.25,z,g);box(.9,.4,.8,'#CFE3F5',x-.1,.75,z,g)});
+   cyl(.45,.45,1,'#8C8C8C',3.8,0,-4,g,10);LOTG.daily={g,h:5.6}}
+  // Centre commercial (voitures)
+  {const g=lot(14,0);tower(9,4,6,'#F5F7FA','#9AD1EE','#E9EEF3',0,-1,g,0,true);box(9.4,.5,6.4,'#E2643A',0,4,-1,g);
+   sign('AUTO & MAISON','#E2643A','#FFFFFF',4.4,.9,0,3.2,2.03,0,g);glow('#FFB27A',4,0,3.2,2.3,g,.6);cyl(1.6,1.6,.25,'#D5D9E2',2.2,0,3.6,g,24);
+   const car=new THREE.Group();box(2.2,.65,1.1,chrome('#E5484D'),0,.3,0,car);box(1.2,.5,1,'#CFE3F5',-.1,.95,0,car);[[-.7,.55],[.7,.55],[-.7,-.55],[.7,-.55]].forEach(([a,b])=>cyl(.25,.25,.2,'#222',a,.05,b,car,10).rotation.x=Math.PI/2);
+   car.position.set(2.2,.25,3.6);car.rotation.y=.6;g.add(car);g.userData.car=car;
+   [-3.8,-2.4].forEach(x=>{cyl(.05,.05,3,'#999',x,0,3.6,g,6);box(.8,.5,.04,'#F7A23B',x+.42,2.4,3.6,g)});LOTG.big={g,h:6.2}}
+  // Banque
+  {const g=lot(0,14);box(9,.8,7,'#E7DEC9',0,0,0,g);box(8,3.6,6,'#F6F1E6',0,.8,-.3,g);
+   for(let k=-3;k<=3;k+=1.5)cyl(.28,.28,3.6,'#FFFFFF',k,.8,3.1,g,12);
+   const ped=sh(new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,8.6,3),M('#FFFFFF')));ped.rotation.z=Math.PI/2;ped.rotation.x=-Math.PI/2;ped.position.set(0,5.2,.1);ped.scale.set(1,1,.55);g.add(ped);
+   box(8.8,.35,6.8,'#EFE7D3',0,4.4,0,g);const coin=cyl(.9,.9,.2,chrome('#F5C542'),0,6.3,.3,g,24);coin.rotation.x=Math.PI/2;g.userData.coin=coin;glow('#FFE08A',3,0,6.3,.5,g,.7);
+   sign('BANQUE','#8B5CF6','#FFFFFF',2.4,.34,0,4.58,3.45,0,g);LOTG.future={g,h:7.8}}
+  // Agence immobilière + pavillons à vendre
+  {const g=lot(14,-14);tower(5,3.6,4,'#F7F3EA','#8FC3E8','#D9634A',-2.5,-2.5,g);sign('AGENCE IMMO','#2DB36F','#FFFFFF',3.2,.7,-2.5,2.8,-.48,0,g);
+   [[2.5,-2.6,'#FFE9D2','#C8463F'],[2.6,2.2,'#E3EEF9','#3F6FB5'],[-2.3,2.4,'#F6E0E6','#8E6E5A']].forEach(([x,z,w,r])=>{box(3,2,2.6,w,x,0,z,g);roof4(2.4,1.3,r,x,2,z,g);box(.6,1.1,.08,'#8E6E5A',x,0,z+1.32,g);
+     box(.7,.6,.06,'#BFE3F2',x+.9,.8,z+1.32,g);box(.3,.8,.3,'#9A9A9A',x+.8,2.2,z-.5,g);flat(3,1.2,'#7DB25A',x,.03,z+2,g)});
+   cyl(.05,.05,1.4,'#8E6E5A',4.5,0,4.6,g,5);sign('À VENDRE','#E5484D','#FFFFFF',1.4,.6,4.5,1.25,4.63,0,g);LOTG.agency={g,h:5.4}}
+
+  /* ---------- Décor ---------- */
+  function farm(x,z,k){if(k%3===0){box(3.4,2.2,2.6,'#C8463F',x,0,z);roof4(2.6,1.4,'#6B3B2E',x,2.2,z);box(1,1.4,.1,'#FFFFFF',x,0,z+1.32);cyl(.6,.6,3.4,'#B9BEC8',x+2.4,0,z-.5,undefined,12);cone(.62,.5,'#9AA0AB',x+2.4,3.4,z-.5,undefined,12)}
+    else{flat(4.6,4.6,k%2?'#D9C86B':'#B8CC6A',x,.04,z);for(let j=-2;j<=2;j++)flat(.25,4.4,k%2?'#C4B057':'#9FB75A',x+j*.9,.05,z);cyl(.55,.55,.9,'#E8C46A',x+1.4,0,z+1.4,undefined,12).rotation.z=Math.PI/2}
+    reg(x,z,5,5)}
+  [[-27,-27,4,17,'#E8DCC4'],[-27,-14,3.5,12,'#D6D9DE'],[-27,-3,3.5,9,'#EADFCB'],[-14,-27,3.5,13,'#D9DDE3'],[-3,-27,3.5,10,'#EFE4CF'],[-27,9,3.2,7,'#E3E6EA'],[9,-27,3.2,8,'#E8DCC4'],
+   [-24,-24,3,11,'#CCD2DA'],[-24,-30,3,14,'#9FC3E8']].forEach(([x,z,w,h,c],k)=>{if(PLACE==='country')return farm(x,z,k);if(PLACE==='city')h*=1.45;
+     tower(w,h,w,c,k%2?'#8FB3D9':'#6E8FB5','#B9BEC8',x,z,undefined,0,k%3===2);if(h>12)glow('#FF5050',.8,x,h+1.1,z,undefined,1.2);reg(x,z,w,w)});
+  if(PLACE==='country')[[-20,-20],[-31,-20]].forEach(([x,z],k)=>farm(x,z,k+1));
+  {const g=new THREE.Group();g.position.set(-14,0,14);scene.add(g);reg(-14,14,11,11);box(8,3,3,'#D9534F',-.5,0,-3,g);box(3,3,5,'#D9534F',-3,0,0,g);box(8.2,.3,3.2,'#F2C94C',-.5,3,-3,g);box(3.2,.3,5.2,'#F2C94C',-3,3,0,g);
+   for(let k=-3;k<=2;k+=1.6)box(.9,.8,.06,'#BFE3F2',k,1.2,-1.48,g);
+   flat(5,4.5,'#C9A57A',1.5,.05,1,g);cyl(.06,.06,4,'#999',3.8,0,3.6,g,6);box(1,.6,.04,'#3F3FD4',4.3,3.3,3.6,g);
+   box(.2,1.6,.2,'#E5484D',.5,0,2.4,g);box(.2,1.6,.2,'#E5484D',2.1,0,2.4,g);box(1.8,.12,.12,'#E5484D',1.3,1.6,2.4,g);sign('ÉCOLE','#F2C94C','#B9433E',2.6,.7,-.5,2.1,-1.48,0,g);LOTG.school={g,h:4.4}}
+  {const g=new THREE.Group();g.position.set(14,0,14);scene.add(g);reg(14,14,11,11);box(5,2.6,4,'#F4E7D3',-2,0,-2,g);roof4(3.8,1.6,'#C8463F',-2,2.6,-2,g);
+   [[1.5,.5],[3,.5],[1.5,2],[3,2]].forEach(([x,z],k)=>{cyl(.35,.35,.6,'#FFFFFF',x,0,z,g,10);cyl(.04,.04,1.5,'#999',x,0,z,g,5);cone(.9,.5,['#E5484D','#F7A23B','#3F3FD4','#2DB36F'][k],x,1.5,z,g,10);glow('#FFC870',1.6,x,1.4,z,g,.8)});
+   sign('SNACK','#C8463F','#FFFFFF',2.4,.7,-2,1.9,.02,0,g);
+   box(3.5,.2,2.5,'#F2C94C',1.5,2.6,-3.4,g);[[0,-4.4],[3,-4.4],[0,-2.4],[3,-2.4]].forEach(([x,z])=>cyl(.1,.1,2.6,'#DDD',x,0,z,g,6));box(.6,1.2,.5,'#E5484D',1.5,0,-3.4,g);LOTG.snack={g,h:5.4}}
+  {const x=27,z=-14;box(4,3.5,6,'#F3EEE6',x,0,z);roof4(3.6,1.8,'#8E6E5A',x,3.5,z).scale.set(.75,1,1.05);
+   box(1.6,6,1.6,'#F3EEE6',x,0,z+3.5);roof4(1.2,2.6,'#8E6E5A',x,6,z+3.5);glow('#FFD58A',1.6,x,4.5,z+4.35,undefined,.8);reg(x,z,5,9)}
+  /* Étang avec reflets et ronds dans l'eau */
+  const pond=new THREE.Mesh(new THREE.CircleGeometry(3.4,40),water);pond.rotation.x=-Math.PI/2;pond.position.set(-27,.07,20);scene.add(pond);reg(-27,20,7.5,7.5);
+  const shore=new THREE.Mesh(new THREE.RingGeometry(3.4,3.9,40),M('#D9C9A0'));shore.rotation.x=-Math.PI/2;shore.position.set(-27,.06,20);scene.add(shore);
+  const RIPPLES=[0,1,2].map(i=>{const m=new THREE.Mesh(new THREE.RingGeometry(.9,1,32),new THREE.MeshBasicMaterial({color:'#FFFFFF',transparent:true,opacity:0,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(-27+[-1,1.2,.2][i],.09,20+[.6,-1,1.4][i]);scene.add(m);return{m,ph:i/3}});
+  const HC=['#F4E2C6','#EAD7C0','#DDE6F0','#F6D8D3','#E2EDD6'],RC=['#C8463F','#8E6E5A','#3F6FB5','#D98B3A'];const CHIMNEYS=[[14+2.5+.8,2.8,-14-2.6-.5],[14+2.6+.8,2.8,-14+2.2-.5]];
+  [[27,4],[27,11],[27,18],[27,27],[4,27],[11,27],[18,27],[-4,27],[-10,27],[18,-27],[-27,27],[-18,27]].forEach(([x,z],k)=>{
+    if(PLACE==='city'){tower(3.2,7+(k*37%8),3.2,HC[k%5],'#7FA7D9','#B9BEC8',x,z);reg(x,z,3.5,3.5);return}
+    box(2.6,1.8,2.4,HC[k%5],x,0,z);roof4(2.1,1.3,RC[k%4],x,1.8,z);box(.5,.9,.06,'#8E6E5A',x,0,z+1.22);box(.55,.45,.06,'#BFE3F2',x+.7,.8,z+1.22);
+    if(k%3===0){box(.3,.8,.3,'#9A9A9A',x+.6,2.1,z-.4);CHIMNEYS.push([x+.6,2.9,z-.4])}
+    glow('#FFC870',1.2,x+.7,1,z+1.3,undefined,.7);reg(x,z,3.5,3.5)});
+  {const g=new THREE.Group();g.position.set(27,0,27);scene.add(g);flat(7,7,'#C9D86B',0,.05,0,g);[[1.5,-1.5],[2.6,-.2]].forEach(([x,z])=>{cyl(.8,.8,3.5,'#B9BEC8',x,0,z,g);cone(.85,.5,'#9AA0AB',x,3.5,z,g,16)});reg(27,27,7,7)}
+  {box(5,.25,3.5,'#F2C94C',-27,3,-6.5);[[-28.8,-7.5],[-25.2,-7.5],[-28.8,-5],[-25.2,-5]].forEach(([x,z])=>cyl(.12,.12,3,'#DDD',x,0,z));box(.6,1.2,.6,'#E5484D',-27,0,-6.2);glow('#FFFFFF',3,-27,2.8,-6.5,undefined,.5);reg(-27,-6.5,6,4)}
+  /* Le rêve */
+  function dreamLM(key){const g=new THREE.Group();g.position.set(27,0,-27);scene.add(g);reg(27,-27,7,7);let h=4;
+    flat(6.5,6.5,'#B9D98F',0,.05,0,g);
+    if(key==='travel'){flat(6,1.6,'#5D6B7A',0,.07,0,g);const f=cyl(.45,.45,4.4,chrome('#FFFFFF'),0,0,0,g,14);f.rotation.z=Math.PI/2;f.position.set(0,1.2,0);
+      box(1.3,.12,5,'#3F3FD4',0,1.1,0,g);box(.6,1.1,.12,'#E5484D',-2,1.2,0,g);const n=cone(.45,.8,'#FFFFFF',0,0,0,g,14);n.rotation.z=-Math.PI/2;n.position.set(2.6,1.2,0);glow('#FF5050',.8,0,1.2,2.5,g,1.2);h=3}
+    else if(key==='house'){box(4,2.4,3.4,'#FFF4E0',0,0,0,g);roof4(3.3,1.8,'#E0605F',0,2.4,0,g);box(.8,1.3,.1,'#8E6E5A',0,0,1.72,g);for(let j=-3;j<=3;j++)box(.12,.7,.12,'#FFFFFF',j,0,3,g);box(6.2,.1,.1,'#FFFFFF',0,.55,3,g);glow('#FFC870',1.6,1.2,1.3,1.8,g,.8);h=5}
+    else if(key==='car'){cyl(2.2,2.2,.3,'#E3E5EA',0,0,0,g,24);const c=new THREE.Group();box(3,.55,1.4,chrome('#E5484D'),0,.3,0,c);box(1.4,.45,1.25,'#2F3142',-.2,.85,0,c);
+      [[-1,.72],[1,.72],[-1,-.72],[1,-.72]].forEach(([a,b])=>cyl(.32,.32,.25,'#222',a,.15,b,c,10).rotation.x=Math.PI/2);c.position.y=.3;g.add(c);g.userData.spin=c;h=2.5}
+    else if(key==='help'){box(4,3,4,'#FFFFFF',0,0,0,g);box(1.6,.45,.2,'#E5484D',0,3.4,0,g);box(.45,1.6,.2,'#E5484D',0,2.83,0,g);sign('ASSO ❤','#E5484D','#FFFFFF',2.4,.6,0,1.8,2.02,0,g);h=5}
+    else{tower(3,9,3,'#2F3142','#7FD3FF','#8B5CF6',0,0,g,0,true);const r=cone(.6,1.6,'#E5484D',0,9,0,g,12);r.position.y=10.9;cyl(.5,.5,1.2,'#F4F5F7',0,9,0,g,12);glow('#FF9A5A',1.6,0,9.4,0,g,1);h=12}
+    return{g,h}}
+  if(G.persona&&G.persona.dream)LOTG.dream=dreamLM(G.persona.dream);
+  const PB=PAR.map((P,i)=>{const L=LOTG[P.lot];L.g.userData.p=i;return L});
+
+  /* ---------- Lampadaires aux carrefours ---------- */
+  ROADS.forEach(a=>ROADS.forEach(b=>lamp(a+1.95,b+1.95)));
+
+  /* ---------- Arbres (instanciés) ---------- */
+  const roadNear=v=>ROADS.some(c=>Math.abs(v-c)<2.5);const pts=[];let tries=0;
+  while(pts.length<(MOBILE?170:230)&&tries++<6000){const x=rnd(-33.5,33.5),z=rnd(-33.5,33.5);
+    if(roadNear(x)||roadNear(z))continue;if(occ.some(([a,b,c,d])=>x>a-.6&&x<b+.6&&z>c-.6&&z<d+.6))continue;
+    if(pts.some(([px,pz])=>(px-x)**2+(pz-z)**2<2.2))continue;pts.push([x,z])}
+  [[-5.8,-5.8],[5.8,-5.8],[-5.8,5.8],[5.8,5.8]].forEach(p=>pts.push(p));
+  const cones=new THREE.InstancedMesh(new THREE.ConeGeometry(.85,2.3,7),M('#2F6B3A'),pts.length);
+  const balls=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:'#ffffff',flatShading:true}),pts.length);
+  const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.13,.16,.7,6),M('#7A5236'),pts.length);
+  const mtx=new THREE.Matrix4(),hide=new THREE.Matrix4().makeScale(0,0,0),Q=new THREE.Quaternion(),TC=['#4E8F3A','#5DA046','#3F7F35','#7FB24F'];
+  pts.forEach(([x,z],i)=>{const s=rnd(.75,1.25),round=i%3===0;
+    trunks.setMatrixAt(i,mtx.compose(new THREE.Vector3(x,.35*s,z),Q,new THREE.Vector3(s,s,s)));
+    cones.setMatrixAt(i,round?hide:mtx.compose(new THREE.Vector3(x,1.85*s,z),Q,new THREE.Vector3(s,s,s)));
+    balls.setMatrixAt(i,round?mtx.compose(new THREE.Vector3(x,1.45*s,z),Q,new THREE.Vector3(s*.95,s*.95,s*.95)):hide);balls.setColorAt(i,new THREE.Color(TC[i%4]))});
+  [cones,balls,trunks].forEach(m=>{m.castShadow=true;m.receiveShadow=true;scene.add(m)});
+
+  /* ---------- Voitures (phares la nuit) ---------- */
+  const CC=['#E5484D','#3F3FD4','#F7A23B','#FFFFFF','#2DB36F','#22B8CF','#8B5CF6','#2F3142'];const cars=[];
+  const NCAR=Math.round(({city:26,town:18,country:8}[PLACE]||18)*(MOBILE?.75:1));
+  for(let k=0;k<NCAR;k++){const bus=k%7===0;const g=new THREE.Group();const L=bus?3.4:1.7;
+    box(L,bus?1.1:.55,bus?1.05:.9,chrome(bus?'#F2C94C':CC[k%CC.length]),0,.25,0,g);box(bus?L-.3:.95,bus?.35:.45,bus?1:.82,'#CFE3F5',bus?0:-.1,bus?.95:.8,0,g);
+    [.3,-.3].forEach(o=>{glow('#FFF2C8',1.5,L/2+.15,.55,o,g,1);glow('#FF3030',.6,-L/2-.05,.55,o,g,1)});
+    const alongX=k%2===0,road=ROADS[k%4],dir=(k%4<2)?1:-1;
+    cars.push({g,alongX,road,dir,lane:dir*.75,pos:rnd(-34,34),sp:rnd(3,5.5)*(bus?.7:1)});scene.add(g)}
+
+  /* ---------- Piétons ---------- */
+  const PEOPLE=[];const SKN=['#FBE0C8','#F1C9A5','#D9A47C','#A86B45','#6E4630'],TOPC=['#E0605F','#3F3FD4','#2DB36F','#F5A623','#8B5CF6','#22B8CF','#FFFFFF'];
+  for(let k=0;k<(MOBILE?14:28);k++){const g=new THREE.Group();const legs=[-.08,.08].map(s=>{const l=new THREE.Mesh(new THREE.BoxGeometry(.1,.42,.12),M('#34495E'));l.geometry.translate(0,-.21,0);l.position.set(s,.42,0);g.add(l);return l});
+    const b=new THREE.Mesh(new THREE.CylinderGeometry(.15,.19,.5,8),M(TOPC[k%7]));b.position.y=.66;b.castShadow=true;g.add(b);
+    const h=new THREE.Mesh(new THREE.SphereGeometry(.15,8,6),M(SKN[k%5]));h.position.y=1.06;g.add(h);
+    if(k%3===0){const hr=new THREE.Mesh(new THREE.SphereGeometry(.16,8,6,0,Math.PI*2,0,Math.PI*.5),M(['#2B1D16','#B5652A','#E8C46A'][k%3]));hr.position.y=1.08;g.add(hr)}
+    g.scale.setScalar(1.35);const alongX=k%2===0,road=ROADS[(k>>1)%4],side=(k%3?1:-1)*1.9,dir=Math.random()<.5?1:-1;
+    PEOPLE.push({g,legs,alongX,road,side,dir,pos:rnd(-33,33),sp:rnd(.8,1.4),ph:rnd(0,6)});scene.add(g)}
+
+  /* ---------- Nuages, oiseaux ---------- */
+  const CLOUDS=[];const cloudMat=new THREE.MeshLambertMaterial({color:'#FFFFFF',transparent:true,opacity:.72,flatShading:true});
+  for(let k=0;k<(MOBILE?4:7);k++){const g=new THREE.Group();const n=3+k%3;
+    for(let j=0;j<n;j++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(rnd(1.5,2.5),0),cloudMat);m.position.set(j*1.9-n*.95,rnd(-.3,.5),rnd(-.9,.9));m.scale.y=.68;m.castShadow=true;g.add(m)}
+    g.position.set(rnd(-60,60),rnd(22,27),rnd(-38,30));CLOUDS.push({g,sp:rnd(.9,1.8)});scene.add(g)}
+  const BIRDS=[];const birdMat=new THREE.MeshBasicMaterial({color:'#2F3142',side:THREE.DoubleSide});
+  for(let f=0;f<(MOBILE?2:3);f++){const flock=new THREE.Group();
+    for(let j=0;j<4;j++){const b=new THREE.Group();const wings=[1,-1].map(s=>{const p=new THREE.Group();const w=new THREE.Mesh(new THREE.PlaneGeometry(.7,.2),birdMat);w.rotation.x=-Math.PI/2;w.position.x=s*.35;p.add(w);b.add(p);return p});
+      b.position.set(j*.9-(j%2)*.4,(j%2)*.3,j*.7);b.userData.w=wings;b.userData.ph=j;flock.add(b)}
+    flock.userData={r:rnd(16,26),sp:rnd(.12,.22)*(f%2?1:-1),ph:f*2.1,y:rnd(13,17)};BIRDS.push(flock);scene.add(flock)}
+
+  /* ---------- Particules ---------- */
+  function pointsSys(n,color,size,additive){const geo=new THREE.BufferGeometry();const pos=new Float32Array(n*3);geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    const m=new THREE.PointsMaterial({color,size:size*DPR,sizeAttenuation:false,transparent:true,opacity:.9,depthWrite:false,map:glowTex,blending:additive?THREE.AdditiveBlending:THREE.NormalBlending});
+    const p=new THREE.Points(geo,m);p.frustumCulled=false;scene.add(p);return{p,pos,geo,m}}
+  const FN=MOBILE?50:90,fount=pointsSys(FN,'#CFEFFF',7,false),fv=[];
+  for(let i=0;i<FN;i++){fv.push([0,-1,0]);fount.pos[i*3+1]=-5}
+  const AN=MOBILE?40:80,amb=pointsSys(AN,'#FFFFFF',6,true),ab=[];
+  for(let i=0;i<AN;i++)ab.push([rnd(-32,32),rnd(.6,4),rnd(-32,32),rnd(0,6)]);
+  const BN=36,burst=pointsSys(BN,'#FFD25A',11,true),bv=[];let burstT=9;
+  for(let i=0;i<BN;i++){bv.push([0,0,0]);burst.pos[i*3+1]=-50}
+  const SMK=[];CHIMNEYS.slice(0,MOBILE?3:6).forEach(([x,y,z])=>{for(let j=0;j<6;j++){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:'#D9DCE3',transparent:true,opacity:0,depthWrite:false}));scene.add(s);SMK.push({s,x,y,z,ph:j/6})}});
+  function sparkle(x,y,z){burstT=0;for(let i=0;i<BN;i++){burst.pos[i*3]=x;burst.pos[i*3+1]=y;burst.pos[i*3+2]=z;const a=rnd(0,Math.PI*2),e=rnd(.2,1);bv[i]=[Math.cos(a)*e*6,rnd(3,8),Math.sin(a)*e*6]}}
+
+  /* ---------- Personnage ---------- */
+  let hero=null,arms=[];const tagAnchor=new THREE.Vector3();
+  function buildHero(){
+    if(hero)scene.remove(hero);const c=G.char||DEF_CHAR;hero=new THREE.Group();arms=[];const sk=c.skin,hr=c.hair;
+    [-.21,.21].forEach(s=>{box(.33,.9,.36,'#34495E',s,.15,0,hero);box(.36,.18,.52,'#2F3142',s,0,.06,hero)});
+    cyl(.42,.47,1.05,c.top,0,1.02,0,hero,14);
+    [-1,1].forEach(s=>{const a=new THREE.Group();a.position.set(s*.56,1.95,0);cyl(.13,.12,.82,c.top,0,-.82,0,a,8);const h=sh(new THREE.Mesh(new THREE.SphereGeometry(.14,10,8),M(sk)));h.position.y=-.92;a.add(h);a.rotation.z=s*.12;hero.add(a);arms.push(a)});
+    cyl(.15,.15,.2,sk,0,2.05,0,hero,8);
+    const head=sh(new THREE.Mesh(new THREE.SphereGeometry(.5,20,16),M(sk)));head.position.y=2.68;hero.add(head);
+    [-.18,.18].forEach(s=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.065,8,6),M('#2F3142'));e.position.set(s,2.72,.46);hero.add(e);
+      const ck=new THREE.Mesh(new THREE.SphereGeometry(.08,8,6),M('#F28B82'));ck.position.set(s*1.5,2.57,.4);ck.scale.set(1,.6,.4);hero.add(ck)});
+    const cap=sh(new THREE.Mesh(new THREE.SphereGeometry(.53,20,14,0,Math.PI*2,0,Math.PI*.52),M(hr)));cap.position.y=2.7;cap.rotation.x=-.18;hero.add(cap);
+    if(c.style==='long')box(.95,.95,.32,hr,0,1.95,-.3,hero);
+    if(c.style==='chignon'){const b=sh(new THREE.Mesh(new THREE.SphereGeometry(.24,12,10),M(hr)));b.position.set(0,3.25,-.25);hero.add(b)}
+    if(c.style==='boucle')for(let k=0;k<12;k++){const t=k/12*Math.PI*2;const b=sh(new THREE.Mesh(new THREE.SphereGeometry(.2,8,6),M(hr)));b.position.set(Math.cos(t)*.48,2.95+Math.sin(k)*.08,Math.sin(t)*.48-.05);hero.add(b)}
+    const shadow=new THREE.Mesh(new THREE.CircleGeometry(.9,24),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.15}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.14;hero.add(shadow);
+    hero.scale.setScalar(1.3);hero.position.set(.6,.12,.6);scene.add(hero);
+  }
+  buildHero();
+  const arrow=new THREE.Mesh(new THREE.ConeGeometry(.7,1.4,4),new THREE.MeshLambertMaterial({color:'#F7C948',emissive:'#7a5a00'}));arrow.rotation.x=Math.PI;scene.add(arrow);
+  const arrowGlow=glow('#FFE08A',3,0,0,0,undefined,0);arrowGlow.userData.always=1;
+
+  /* ---------- Cycle jour / nuit ---------- */
+  const KEYS=[
+    {t:0,top:'#0B1633',bot:'#22345E',sun:'#9FB4FF',si:.22,hs:'#5A6FA8',hg:'#1C2638',hi:.42,n:1},
+    {t:.21,top:'#1E2B55',bot:'#5A4C7A',sun:'#B9A4FF',si:.28,hs:'#7A7AB0',hg:'#2C3242',hi:.48,n:.85},
+    {t:.26,top:'#5C7FC4',bot:'#FFB48A',sun:'#FFB27A',si:.55,hs:'#E7B9A8',hg:'#55643F',hi:.62,n:.35},
+    {t:.32,top:'#7EC3F2',bot:'#FCE6C6',sun:'#FFE7C2',si:.72,hs:'#F1F5FF',hg:'#6F8F55',hi:.76,n:0},
+    {t:.5,top:'#4FA8EE',bot:'#D3EEFF',sun:'#FFF8EC',si:.82,hs:'#FFFFFF',hg:'#6F8F55',hi:.82,n:0},
+    {t:.68,top:'#5EA2E0',bot:'#FFE2B8',sun:'#FFE2B4',si:.74,hs:'#FFF1E2',hg:'#6F8F55',hi:.76,n:0},
+    {t:.75,top:'#4A4C8E',bot:'#FF9B78',sun:'#FF9A66',si:.55,hs:'#E2A2B0',hg:'#4F5E3E',hi:.6,n:.4},
+    {t:.81,top:'#1B2552',bot:'#6B4E85',sun:'#B9A4FF',si:.3,hs:'#7A7AB0',hg:'#2C3242',hi:.48,n:.85},
+    {t:.87,top:'#0B1633',bot:'#22345E',sun:'#9FB4FF',si:.22,hs:'#5A6FA8',hg:'#1C2638',hi:.42,n:1},
+    {t:1,top:'#0B1633',bot:'#22345E',sun:'#9FB4FF',si:.22,hs:'#5A6FA8',hg:'#1C2638',hi:.42,n:1}];
+  const cA=new THREE.Color(),cB=new THREE.Color();
+  const mix=(a,b,k)=>cA.set(a).lerp(cB.set(b),k).clone();
+  let tod=G.daymode==='night'?.95:G.daymode==='day'?.52:(()=>{const d=new Date();return(d.getHours()+d.getMinutes()/60)/24})(),NF=0,skyTick=0;
+  const sky=$('#sky'),stars=$('#stars'),orb=$('#orb');
+  function applyTime(){
+    let i=0;while(i<KEYS.length-2&&KEYS[i+1].t<=tod)i++;const A=KEYS[i],B=KEYS[i+1],k=clamp((tod-A.t)/(B.t-A.t),0,1);
+    sun.color.copy(mix(A.sun,B.sun,k));sun.intensity=A.si+(B.si-A.si)*k;hemi.color.copy(mix(A.hs,B.hs,k));hemi.groundColor.copy(mix(A.hg,B.hg,k));hemi.intensity=A.hi+(B.hi-A.hi)*k;
+    NF=A.n+(B.n-A.n)*k;
+    const a=(tod-.25)*Math.PI*2,e=Math.sin(a);
+    if(e>-.06)sun.position.set(Math.cos(a)*45,8+Math.max(0,e)*40,24);else{const b=a+Math.PI;sun.position.set(Math.cos(b)*45,8+Math.max(0,Math.sin(b))*40,-20)}
+    NIGHT.forEach(m=>m.emissiveIntensity=NF*1.05);
+    GLOWS.forEach(g=>{if(!g.userData.always)g.material.opacity=Math.min(1,NF*1.1)*g.userData.k});
+    BULB.color.set(NF>.4?'#FFE7A8':'#DADDE5');cloudMat.color.set(NF>.5?'#8C97B8':'#FFFFFF');
+    amb.m.color.set(NF>.5?'#FFF08A':'#FFFFFF');amb.m.opacity=.35+NF*.6;
+    if(skyTick++%6===0){const top=mix(A.top,B.top,k).getStyle(),bot=mix(A.bot,B.bot,k).getStyle();sky.style.background=`linear-gradient(180deg,${top} 0%,${bot} 100%)`;
+      stars.style.opacity=Math.max(0,NF-.3)*1.4;const hz=$('.haze');if(hz)hz.style.opacity=1-NF*.85;
+      const day=e>-.06,p=day?(tod-.25+.03)/.56:(((tod+.25)%1)+.03)/.56;orb.className=day?'':'moon';
+      orb.style.left=(6+clamp(p,0,1)*88)+'%';orb.style.top=(34-Math.sin(clamp(p,0,1)*Math.PI)*26)+'%';
+      const tb=$('#timeBtn');if(tb){const h=Math.floor(tod*24),mn=Math.floor((tod*24-h)*60);tb.innerHTML=`${NF>.5?'🌙':'☀️'} ${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')} <small>${{auto:'auto',day:'jour',night:'nuit'}[G.daymode||'auto']}</small>`}}
+  }
+
+  /* ---------- Caméra : orbite, zoom, animations ---------- */
+  let theta=Math.PI/4,zoom=1,W=1,H=1,paused=false,hiddenTab=false;const target=new THREE.Vector3(0,0,0);let camAnim=null;
+  function resize(){W=el.clientWidth||innerWidth;H=el.clientHeight||innerHeight;renderer.setSize(W,H,false);const a=W/H;const hh=Math.max(25,31/a);cam.left=-hh*a;cam.right=hh*a;cam.top=hh;cam.bottom=-hh;cam.zoom=zoom;cam.updateProjectionMatrix()}
+  function placeCam(){const D=70,phi=.62;cam.position.set(target.x+D*Math.cos(phi)*Math.cos(theta),D*Math.sin(phi),target.z+D*Math.cos(phi)*Math.sin(theta));cam.lookAt(target.x,3,target.z)}
+  function animCam(to,dur){camAnim={t0:performance.now(),dur,from:{z:zoom,x:target.x,zz:target.z},to}}
+  window.addEventListener('resize',resize);resize();placeCam();
+  let drag=null,moved=0,pinch=null;const ptrs=new Map();
+  el.addEventListener('pointerdown',e=>{if(e.target!==renderer.domElement)return;ptrs.set(e.pointerId,e);drag={x:e.clientX,t:theta};moved=0;camAnim=null;
+    if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),z:zoom}}});
+  el.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,e);
+    if(ptrs.size===2&&pinch){const [a,b]=[...ptrs.values()];zoom=clamp(pinch.z*Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)/pinch.d,.7,2.6);resize();moved=99;return}
+    if(drag){const dx=e.clientX-drag.x;moved=Math.max(moved,Math.abs(dx));theta=drag.t-dx*.008;placeCam();$('#hint').style.opacity=0}});
+  const up=e=>{const was=ptrs.has(e.pointerId);ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(was&&drag&&moved<6&&e.target===renderer.domElement)pick(e);if(!ptrs.size)drag=null};
+  el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+  el.addEventListener('wheel',e=>{e.preventDefault();zoom=clamp(zoom*(e.deltaY<0?1.1:.9),.7,2.6);resize()},{passive:false});
+  document.addEventListener('visibilitychange',()=>{hiddenTab=document.hidden});
+  const ray=new THREE.Raycaster();
+  function pick(e){const r=renderer.domElement.getBoundingClientRect();
+    ray.setFromCamera({x:(e.clientX-r.left)/r.width*2-1,y:-(e.clientY-r.top)/r.height*2+1},cam);
+    const objs=[...PB.map(b=>b.g),hero];if(LOTG.dream)objs.push(LOTG.dream.g);
+    const hit=ray.intersectObjects(objs,true)[0];if(!hit)return;
+    let o=hit.object;while(o&&o.userData.p===undefined&&o!==hero&&!(LOTG.dream&&o===LOTG.dream.g))o=o.parent;
+    if(o===hero){sparkle(hero.position.x,4,hero.position.z);return A.creator()}
+    if(LOTG.dream&&o===LOTG.dream.g){sparkle(27,LOTG.dream.h,-27);return A.dream()}
+    if(o){const b=PB[o.userData.p];sparkle(b.g.position.x,b.h,b.g.position.z);openPar(o.userData.p)}}
+
+  /* ---------- Boucle d'animation ---------- */
+  const v=new THREE.Vector3(),clock=new THREE.Clock();let perfAcc=0,perfN=0,readyCb=null,firstFrame=true;
+  function proj(p,elx,dy=0){v.copy(p).project(cam);if(!elx)return;const hw=(elx.offsetWidth||120)/2;const x=clamp((v.x+1)/2*W,hw+6,W-hw-6),y=Math.max((1-v.y)/2*H+dy,(elx.offsetHeight||36)+6);elx.style.transform=`translate(${x}px,${y}px) translate(-50%,-100%)`}
+  function loop(){
+    requestAnimationFrame(loop);if(paused||hiddenTab)return;
+    const dt=Math.min(.05,clock.getDelta()),t=clock.elapsedTime;
+    /* heure */
+    const mode=G.daymode||'auto';
+    if(mode==='auto')tod=(tod+dt/240)%1;else{const tg=mode==='day'?.52:.95;let d=tg-tod;if(d>.5)d-=1;if(d<-.5)d+=1;tod=(tod+d*Math.min(1,dt*1.8)+1)%1}
+    applyTime();
+    /* caméra animée */
+    if(camAnim){const k=clamp((performance.now()-camAnim.t0)/camAnim.dur,0,1),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      zoom=camAnim.from.z+(camAnim.to.z-camAnim.from.z)*e;target.x=camAnim.from.x+(camAnim.to.x-camAnim.from.x)*e;target.z=camAnim.from.zz+(camAnim.to.zz-camAnim.from.zz)*e;
+      cam.zoom=zoom;cam.updateProjectionMatrix();placeCam();if(k>=1)camAnim=null}
+    /* voitures */
+    cars.forEach(c=>{c.pos+=c.dir*c.sp*dt;if(c.pos>35)c.pos=-35;if(c.pos<-35)c.pos=35;const s=clamp((34.5-Math.abs(c.pos))/2.5,0,1);c.g.scale.setScalar(s);
+      if(c.alongX){c.g.position.set(c.pos,0,c.road+c.lane);c.g.rotation.y=c.dir>0?0:Math.PI}else{c.g.position.set(c.road+c.lane,0,c.pos);c.g.rotation.y=c.dir>0?-Math.PI/2:Math.PI/2}});
+    /* piétons */
+    PEOPLE.forEach(p=>{p.pos+=p.dir*p.sp*dt;if(p.pos>34)p.pos=-34;if(p.pos<-34)p.pos=34;const s=clamp((34-Math.abs(p.pos))/2,0,1)*1.35;p.g.scale.setScalar(s);
+      const sw=Math.sin(t*7*p.sp+p.ph)*.55;p.legs[0].rotation.x=sw;p.legs[1].rotation.x=-sw;
+      if(p.alongX){p.g.position.set(p.pos,Math.abs(sw)*.04,p.road+p.side);p.g.rotation.y=p.dir>0?Math.PI/2:-Math.PI/2}else{p.g.position.set(p.road+p.side,Math.abs(sw)*.04,p.pos);p.g.rotation.y=p.dir>0?0:Math.PI}});
+    /* nuages, oiseaux */
+    CLOUDS.forEach(c=>{c.g.position.x+=c.sp*dt;if(c.g.position.x>65)c.g.position.x=-65});
+    BIRDS.forEach(f=>{const u=f.userData,a=u.ph+t*u.sp;f.position.set(Math.cos(a)*u.r,u.y+Math.sin(t*.7+u.ph)*.8,Math.sin(a)*u.r);f.rotation.y=-a+(u.sp>0?0:Math.PI);f.visible=NF<.55;
+      f.children.forEach(b=>{const fl=Math.sin(t*11+b.userData.ph)*.7;b.userData.w[0].rotation.z=fl;b.userData.w[1].rotation.z=-fl})});
+    /* fontaine */
+    for(let i=0;i<FN;i++){const j=i*3;if(fount.pos[j+1]<.65){fount.pos[j]=-2.9;fount.pos[j+1]=1.75;fount.pos[j+2]=-2.9;fv[i]=[rnd(-.7,.7),rnd(3,4.2),rnd(-.7,.7)]}
+      fv[i][1]-=9.8*dt;fount.pos[j]+=fv[i][0]*dt;fount.pos[j+1]+=fv[i][1]*dt;fount.pos[j+2]+=fv[i][2]*dt}
+    fount.geo.attributes.position.needsUpdate=true;
+    /* lucioles / pollen */
+    for(let i=0;i<AN;i++){const b=ab[i],j=i*3;amb.pos[j]=b[0]+Math.sin(t*.4+b[3])*1.6;amb.pos[j+1]=b[1]+Math.sin(t*.9+b[3]*2)*.5;amb.pos[j+2]=b[2]+Math.cos(t*.35+b[3])*1.6}
+    amb.geo.attributes.position.needsUpdate=true;
+    /* étincelles */
+    if(burstT<1.2){burstT+=dt;for(let i=0;i<BN;i++){const j=i*3;bv[i][1]-=12*dt;burst.pos[j]+=bv[i][0]*dt;burst.pos[j+1]+=bv[i][1]*dt;burst.pos[j+2]+=bv[i][2]*dt}burst.m.opacity=Math.max(0,1-burstT/1.2);burst.geo.attributes.position.needsUpdate=true}
+    /* fumée des cheminées */
+    SMK.forEach(s=>{const k=(t*.25+s.ph)%1;s.s.position.set(s.x+k*1.2,s.y+k*3.2,s.z-k*.4);const sc=.5+k*1.8;s.s.scale.set(sc,sc,1);s.s.material.opacity=(1-k)*.55*(k>.05?1:k*20)});
+    /* ronds dans l'eau */
+    RIPPLES.forEach(r=>{const k=(t*.35+r.ph)%1;r.m.scale.setScalar(.3+k*1.6);r.m.material.opacity=(1-k)*.5});
+    /* personnage */
+    if(hero){hero.position.y=.12+Math.abs(Math.sin(t*2.2))*.06;const face=Math.atan2(cam.position.x-hero.position.x,cam.position.z-hero.position.z);hero.rotation.y=face+Math.sin(t*.6)*.35;
+      arms.forEach((a,k)=>a.rotation.x=Math.sin(t*2.2+k*Math.PI)*.25);if(t%7<1.2)arms[1].rotation.z=-1.9-Math.sin(t*12)*.35;else arms[1].rotation.z=.12}
+    const n=nextIdx();
+    if(n<PAR.length){const b=PB[n];arrow.visible=true;arrow.position.set(b.g.position.x,b.h+4.2+Math.sin(t*3)*.4,b.g.position.z);arrow.rotation.y=t*2;arrowGlow.position.copy(arrow.position);arrowGlow.material.opacity=.35+NF*.5}else{arrow.visible=false;arrowGlow.material.opacity=0}
+    if(LOTG.big.g.userData.car)LOTG.big.g.userData.car.rotation.y=t*.5;if(LOTG.future.g.userData.coin)LOTG.future.g.userData.coin.rotation.z=t*1.5;if(LOTG.dream&&LOTG.dream.g.userData.spin)LOTG.dream.g.userData.spin.rotation.y=t*.6;
+    renderer.render(scene,cam);
+    PB.forEach((b,i)=>proj(new THREE.Vector3(b.g.position.x,b.h,b.g.position.z),document.getElementById('bub'+i),-8));
+    proj(tagAnchor.set(hero.position.x,4.9,hero.position.z),$('#chartag'));
+    if(LOTG.dream)proj(new THREE.Vector3(27,LOTG.dream.h+.6,-27),$('#bubDream'),-8);
+    if(firstFrame){firstFrame=false;$('#labels').classList.add('ready');readyCb&&readyCb()}
+    /* qualité adaptative : on allège si le téléphone peine */
+    perfAcc+=dt;perfN++;if(perfN>=120){const avg=perfAcc/perfN;
+      if(avg>1/40&&DPR>1){DPR=Math.max(1,DPR-.3);renderer.setPixelRatio(DPR);resize()}
+      else if(avg>1/32&&sun.shadow.mapSize.x>512){sun.shadow.mapSize.set(512,512);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}CLOUDS.forEach(c=>c.g.children.forEach(m=>m.castShadow=false))}
+      perfAcc=0;perfN=0}
+  }
+  loop();
+  return{
+    onReady:cb=>{readyCb=cb;if(!firstFrame)cb()},
+    pause:p=>{const was=paused;paused=p;if(!p){clock.getDelta();resize();if(was){animCam({z:1,x:0,zz:0},1100)}}},
+    refreshChar:buildHero,
+    zoomTo:i=>{const b=PB[i];if(!b)return;animCam({z:2.3,x:b.g.position.x*.85,zz:b.g.position.z*.85},520)},
+    focus:i=>{const b=PB[i];if(!b)return;const a0=theta,a1=Math.atan2(b.g.position.z,b.g.position.x);let d=a1-a0;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;
+      const st=performance.now();const anim=()=>{const k=Math.min(1,(performance.now()-st)/1200),e=1-Math.pow(1-k,3);theta=a0+d*e*.35;placeCam();if(k<1)requestAnimationFrame(anim)};anim()}};
+}
+
+function fallbackCity(){
+  $('#labels').classList.add('ready');
+  $('#fallback').style.display='block';$('#hint').style.display='none';
+    $('#fgrid').innerHTML=PAR.map((P,i)=>`<div class="lot">${P.ic}<button class="bub" id="bub${i}" data-a="par" data-v="${i}"></button></div>`).join('');
+  $('#labels').innerHTML='<div class="tag3d" id="chartag" style="display:none"></div>';
+}
+
+/* =========================================================
+   ACTIONS (délégation des clics)
+   ========================================================= */
+const A={
+  par:v=>openPar(v),close:closeModal,start:v=>{closeModal();const P=PAR[+v];city&&city.zoomTo(+v);wipe(P.col,P.ic,()=>startParcours(+v))},
+  roll,choose,cont,tile:v=>tileInfo(+v),piggy,bilan:()=>showBilanOrPay(),
+  payPct:v=>{R.payPct=+v;save();showPay()},
+  payOk:()=>{const s=salary(R.p);if(R.payPct>0)toSav(Math.min(Math.max(0,G.money),s*R.payPct),'🐷 Épargne du jour de paie');R.phase='bilan';save();renderBoard();showBilan()},
+  finish:v=>finish(v),replay,
+  sav:v=>{const x=v==='all'?G.money:+v;if(toSav(x)){beep('coin');save();updateHud();renderBoard();piggy()}else toast('Pas assez sur ton compte','neg')},
+  unsav:v=>{const x=v==='all'?G.savings:+v;if(fromSav(x)){beep('coin');save();renderBoard();piggy()}else toast('Ta tirelire est vide','neg')},
+  inv:v=>{const x=v==='all'?G.money:+v;if(toInv(x)){beep('coin');save();renderBoard();piggy()}else toast('Pas assez sur ton compte','neg')},
+  toCity:()=>{if(R&&R.busy)return;G.screen='city';save();wipe('#8DB36B','🏙️',()=>{showCity();toast('Ta partie est sauvegardée. Touche le bâtiment pour reprendre !')})},
+  creator:()=>creator(false),
+  cset:v=>{const[k,val]=v.split('|');const n=$('#cname');if(n)window._cc.name=n.value;window._cc[k]=val;window._ccDraw()},
+  csave:()=>{const c=window._cc;c.name=(($('#cname')||{}).value||c.name||'Alex').trim().slice(0,14)||'Alex';const first=!G.char;G.char=c;save();closeModal();
+    if(first){G.justStarted=true;save();location.reload();return}if(city)city.refreshChar();renderCity()},
+  bilanCity:()=>{const st=Object.values(G.stars).reduce((a,b)=>a+b,0);
+    modal(`<div class="sh"><div class="em">📊</div><h3>Mon bilan</h3></div><div class="sb">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px">${avatarSVG(G.char,64)}<div><b style="font-size:19px">${G.char?G.char.name:''}</b><div class="muted">${G.age} ans${G.job?' · '+G.job.n:''}</div></div></div>${personaRows()}
+      <div class="row"><span>💳 Compte</span><b class="${G.money<0?'neg':''}">${fmt(G.money)}</b></div><div class="row"><span>🐷 Épargne</span><b>${fmt(G.savings)}</b></div>
+      <div class="row"><span>📈 Placements</span><b>${fmt(G.invest)}</b></div><div class="row"><span>😊 Moral</span><b>${Math.round(G.joy)}/100</b></div>
+      <div class="row"><span>⭐ Étoiles</span><b>${st} / ${PAR.length*3}</b></div>
+      ${PAR.map((P,i)=>`<div class="row"><span>${P.ic} ${P.t}</span><b>${G.done[i]?'⭐'.repeat(G.stars[i]||0)+'☆'.repeat(3-(G.stars[i]||0)):'—'}</b></div>`).join('')}
+      ${G.run?`<button class="btn" data-a="resume">▶ Reprendre ma partie en cours</button>`:''}
+      <button class="btn ghost" data-a="close">Fermer</button></div>`)},
+  resume:()=>{closeModal();if(G.run){R=G.run;G.screen='board';showBoard();resumeModal()}},
+  settings:()=>modal(`<div class="sh"><div class="em">⚙️</div><h3>Options</h3></div><div class="sb">
+    <div class="row"><span>🔊 Sons</span><button class="btn ghost" style="width:auto;margin:0;padding:8px 14px" data-a="snd">${G.sound?'Activés':'Coupés'}</button></div>
+    <button class="btn ghost" data-a="install">📲 Installer l’application</button>
+    <button class="btn ghost" data-a="reset" style="color:var(--bad)">↺ Nouveau profil, nouvelle vie</button><button class="btn" data-a="close">Fermer</button></div>`),
+  snd:()=>{G.sound=!G.sound;save();A.settings()},
+  reset:()=>modal(`<div class="sh" style="--tc:#E5484D"><div class="em">↺</div><h3>Nouvelle vie ?</h3></div><div class="sb"><p>Toute ta progression sera effacée.</p><button class="btn" style="--tc:#E5484D" data-a="resetOk">Oui, tout recommencer</button><button class="btn ghost" data-a="close">Annuler</button></div>`),
+  resetOk:()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()},
+  closeFin:()=>{closeModal();city&&city.focus(PAR.length-1)},dream:()=>dreamModal(),
+};
+/* Reprendre un parcours en cours quand on retouche son bâtiment */
+const _openPar=openPar;openPar=function(i){if(G.run&&+i===G.run.p){R=G.run;G.screen='board';save();showBoard();return resumeModal()}if(G.run&&+i!==G.run.p){return modal(`<div class="sh"><div class="em">⏸️</div><h3>Partie en cours</h3></div><div class="sb"><p>Tu es en plein milieu de « ${PAR[G.run.p].t} ». Termine ce mois d’abord !</p><button class="btn" data-a="resume">▶ Reprendre</button><button class="btn ghost" data-a="close">Fermer</button></div>`)}return _openPar(i)};
+function resumeModal(){
+  if(!R)return;
+  if(R.phase==='intro'){R.pending=null;return openIntro()}
+  if(R.phase==='pay')return showPay();
+  if(R.phase==='bilan')return showBilan();
+  if(R.pending&&!R.pending.res){const sq=R.squares[R.pos-1];showCard(cardsOf(R.pending.type)[R.pending.idx],TYPES[R.pending.type],sq)}
+  else if(R.pending&&R.pending.res){R.pending=null;save();renderBoard()}
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const f=A[b.dataset.a];if(f)f(b.dataset.v)});
+window.addEventListener('resize',()=>{if(R&&!$('#board').classList.contains('hidden'))placePawn(false)});
+
+function hideLoader(){const l=$('#loader');if(l&&!l.classList.contains('gone')){l.classList.add('gone');setTimeout(()=>l.remove(),900)}}
+let LP={x:innerWidth/2,y:innerHeight/2};document.addEventListener('pointerdown',e=>{LP={x:e.clientX,y:e.clientY}},true);
+function wipe(color,emoji,cb){const w=$('#wipe');w.style.background=color;w.style.setProperty('--x',LP.x+'px');w.style.setProperty('--y',LP.y+'px');w.textContent=emoji||'';
+  w.className='';void w.offsetWidth;w.className='on';beep('step');
+  setTimeout(()=>{cb&&cb();requestAnimationFrame(()=>{w.className='on out';setTimeout(()=>{w.className=''},480)})},520)}
+
+/* =========================================================
+   DÉMARRAGE
+   ========================================================= */
+load();
+Object.assign(A,A_ONB);
+if(!G.persona){hideLoader();showOnb()}
+else{
+  PAR=buildTrack();
+  makeBubbles();
+  city=initCity();
+  if(!city){fallbackCity();hideLoader()}else city.onReady(hideLoader);
+  renderCity();
+  setTimeout(()=>{const h=$('#hint');if(h)h.style.opacity=0},6000);
+  if(!G.char)creator(true);
+  else if(G.run&&G.screen==='board'){R=G.run;showBoard();resumeModal()}
+  else if(G.justStarted){G.justStarted=false;save();toast(`Bienvenue en ville, ${G.char.name} ! 🏙️`);setTimeout(()=>openPar(0),900)}
+}
+
+/* =========================================================
+   APPLICATION INSTALLABLE (PWA) + TUTO
+   ========================================================= */
+const SVG_SHARE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>';
+const SVG_ADD='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
+const SVG_DOTS='<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg>';
+let deferredPrompt=null;
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function updInstall(){const b=$('#instBtn');if(b)b.classList.toggle('hidden',isStandalone())}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;updInstall()});
+window.addEventListener('appinstalled',()=>{deferredPrompt=null;toast('📲 Capylum est installé !');updInstall()});
+function installModal(tab){
+  tab=tab||(isIOS()?'ios':'android');const otherIOS=isIOS()&&/crios|fxios|edgios/i.test(navigator.userAgent);
+  const ios=`<div class="phone"><div class="scr"><img src="icons/icon-192.png" alt=""></div><div class="bar"><span>‹</span><span>›</span><span class="ki hl">${SVG_SHARE}</span><span>📖</span><span>⧉</span></div></div>
+    <ol class="steps"><li>Ouvre Capylum dans <b>Safari</b>${otherIOS?' <span class="neg">(tu es dans un autre navigateur : copie le lien et colle-le dans Safari)</span>':''}.</li>
+    <li>Touche le bouton <b>Partager</b> <span class="ki">${SVG_SHARE}</span> en bas de l’écran (en haut sur iPad).</li>
+    <li>Fais défiler la liste et choisis <b>« Sur l’écran d’accueil »</b> <span class="ki">${SVG_ADD}</span>.</li>
+    <li>Touche <b>« Ajouter »</b> en haut à droite. L’icône Capylum apparaît sur ton écran d’accueil 🎉</li></ol>`;
+  const and=`${deferredPrompt?`<button class="btn" data-a="doInstall">📲 Installer maintenant</button><p class="muted" style="text-align:center;font-size:13px;margin:8px 0 10px">ou à la main :</p>`:''}
+    <div class="phone"><div class="top"><span>capylum</span><span class="ki hl">${SVG_DOTS}</span></div><div class="scr"><img src="icons/icon-192.png" alt=""></div></div>
+    <ol class="steps"><li>Ouvre Capylum dans <b>Chrome</b> (ou Samsung Internet).</li>
+    <li>Touche le menu <span class="ki">${SVG_DOTS}</span> en haut à droite.</li>
+    <li>Choisis <b>« Installer l’application »</b> ou <b>« Ajouter à l’écran d’accueil »</b> <span class="ki">${SVG_ADD}</span>.</li>
+    <li>Confirme avec <b>« Installer »</b>. Capylum s’ouvre en plein écran, comme une vraie app 🎉</li></ol>`;
+  modal(`<div class="sh"><div class="ty"><span>📲 Installer l’app</span></div><div class="em">📱</div><h3>Capylum sur ton écran d’accueil</h3></div><div class="sb">
+    ${isStandalone()?'<div class="verdict good"><b>C’est déjà fait ✅</b><p>Tu utilises Capylum comme une vraie application.</p></div>':''}
+    <div class="tabs2"><button class="${tab==='ios'?'on':''}" data-a="instTab" data-v="ios">🍎 iPhone / iPad</button><button class="${tab==='android'?'on':''}" data-a="instTab" data-v="android">🤖 Android</button></div>
+    ${tab==='ios'?ios:and}
+    <p style="font-size:13px;color:var(--muted);margin:10px 0 0">💡 Une fois installée, l’app s’ouvre en plein écran et fonctionne même sans internet. Ta partie reste sauvegardée sur ton appareil.</p>
+    <button class="btn ghost" data-a="close">Fermer</button></div>`);
+}
+Object.assign(A,{
+  install:()=>installModal(),instTab:v=>installModal(v),
+  doInstall:async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();const r=await deferredPrompt.userChoice;deferredPrompt=null;closeModal();updInstall();if(r.outcome==='accepted')toast('📲 Installation en cours…')},
+  daymode:()=>{const m=['auto','day','night'];G.daymode=m[(m.indexOf(G.daymode||'auto')+1)%3];save();toast({auto:'🔄 Cycle jour / nuit automatique',day:'☀️ Toujours de jour',night:'🌙 Toujours de nuit'}[G.daymode])},
+});
+updInstall();
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+/* Étoiles du ciel */
+(()=>{const st=$('#stars');if(!st)return;let sh='';for(let i=0;i<110;i++){const x=Math.random()*100,y=Math.random()*70,a=(.4+Math.random()*.6).toFixed(2);sh+=`${sh?',':''}${x.toFixed(1)}vw ${y.toFixed(1)}vh 0 ${Math.random()<.15?1:0}px rgba(255,255,255,${a})`}st.style.boxShadow=sh;st.style.background='#fff'})();
+setTimeout(hideLoader,8000);
+</script>
+</body>
+</html>
