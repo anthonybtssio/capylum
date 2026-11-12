@@ -57,7 +57,7 @@ button{font-family:inherit;cursor:pointer}
 .wallet .ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
 .wallet .ring span{position:absolute;inset:0;display:grid;place-items:center;font-size:24px;font-weight:900;color:#1E7A4A}
 .wallet small{display:block;color:var(--muted);font-size:12.5px}
-.wallet b{display:block;font-size:24px;font-weight:900;letter-spacing:-.3px}
+.wallet b{display:block;font-size:24px;font-weight:900;letter-spacing:-.3px;white-space:nowrap}
 .wallet .av{position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:76px;height:76px;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 4px var(--coral),0 6px 14px rgba(0,0,0,.18);overflow:hidden;background:#DDE3F3}
 .filters{position:absolute;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#fff;border-radius:999px;display:flex;box-shadow:0 6px 18px rgba(0,0,0,.14);overflow:hidden}
 .filters button{background:none;border:none;padding:9px 18px;color:var(--coral);display:flex;align-items:center;gap:6px;font-weight:900;font-size:13px}
@@ -70,14 +70,14 @@ button{font-family:inherit;cursor:pointer}
 #fallback .bub{position:absolute;left:50%;top:-14px;transform:translateX(-50%)}
 
 /* ---------- PLATEAU ---------- */
-#board{position:fixed;inset:0;background:var(--bg);overflow-y:auto;overflow-x:hidden;z-index:5}
+#board{position:fixed;inset:0;background:linear-gradient(180deg,#8CCBF5 0%,#D9F0FF 55%,#BFE0A8 100%);overflow:hidden;z-index:5}
 .bwrap{max-width:720px;margin:0 auto;padding:0 14px calc(120px + env(safe-area-inset-bottom))}
 .bhead{position:sticky;top:0;z-index:4;background:var(--pc);color:#fff;margin:0 -14px;padding:calc(12px + env(safe-area-inset-top)) 14px 14px;border-radius:0 0 22px 22px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
 .bh1{display:flex;align-items:center;gap:10px}
 .bback{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:12px;padding:8px 12px;font-weight:900;font-size:14px}
 .btitle{flex:1;min-width:0}
 .btitle b{display:block;font-size:19px;font-weight:900;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.btitle small{opacity:.9;font-size:13px}
+.btitle small{opacity:.9;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bav{width:46px;height:46px;border-radius:50%;border:3px solid #fff;overflow:hidden;flex:none;background:#DDE3F3}
 .stats{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .st{flex:1;min-width:0;background:rgba(255,255,255,.17);border-radius:14px;padding:7px 10px}
@@ -145,7 +145,7 @@ button{font-family:inherit;cursor:pointer}
 .verdict{border-radius:16px;padding:14px;margin-bottom:12px}
 .verdict b{display:block;font-size:19px;font-weight:900;margin-bottom:5px}
 .verdict.good{background:var(--good-bg);color:#17734A}.verdict.bad{background:var(--bad-bg);color:#B3262B}.verdict.neu{background:var(--neu-bg);color:var(--indigo-d)}
-.verdict p{margin:0;color:inherit;font-size:15px}
+.verdict p{margin:0;color:inherit;font-size:15px}.verdict p b{display:inline;font-size:inherit;margin:0}
 .btn{display:block;width:100%;border:none;border-radius:16px;padding:15px;font-size:16px;font-weight:900;color:#fff;background:var(--tc,var(--indigo));box-shadow:0 4px 0 rgba(0,0,0,.18);margin-top:10px}
 .btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
 .btn.ghost{background:#F1F2F7;color:var(--ink);box-shadow:0 4px 0 #DEE0EA}
@@ -236,6 +236,168 @@ input.name{width:100%;font:inherit;font-size:17px;font-weight:800;padding:11px 1
  .topr{transform:scale(.85);transform-origin:top right}
  .bhead{position:static}
 }
+
+/* ---------- LA RUE DU MOIS (3D) ---------- */
+#street{position:absolute;inset:0}
+#street canvas{touch-action:none}
+.sthead{position:absolute;left:0;right:0;top:0;z-index:3;pointer-events:none;max-width:720px;margin:0 auto;padding:0 10px}
+.sthead>*{pointer-events:auto}
+.sthead .bhead{position:relative;margin:0 -10px;border-radius:0 0 22px 22px}
+.sthead .goal{margin:8px 0 6px;padding:8px 12px;font-size:13.5px;background:rgba(255,255,255,.94)}
+.prog{position:relative;height:30px;margin:0 6px;cursor:pointer}
+.prog::before{content:"";position:absolute;left:0;right:0;top:13px;height:5px;border-radius:4px;background:rgba(255,255,255,.75)}
+.prog>i{position:absolute;left:0;top:13px;height:5px;border-radius:4px;background:var(--pc,#3F3FD4);transition:width .3s}
+.prog span{position:absolute;top:2px;transform:translateX(-50%);font-size:15px;background:#fff;border-radius:50%;width:24px;height:24px;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.prog span.done{opacity:.45}
+.prog b{position:absolute;top:-1px;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;overflow:hidden;border:2.5px solid #fff;box-shadow:0 0 0 2px var(--coral);transition:left .3s;z-index:2}
+.controls .in{align-items:stretch}
+.rollbtn.walk{display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 10px;min-width:0}
+.rollbtn.walk small{font-size:12px;font-weight:800;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#stfb{position:absolute;left:0;right:0;top:45%;z-index:2}
+.fbst{display:flex;gap:10px;overflow-x:auto;padding:12px}
+.fbst div{flex:none;width:64px;height:76px;border-radius:14px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:30px;box-shadow:0 3px 8px rgba(0,0,0,.1)}
+.fbst div small{font-size:11px;color:var(--muted)}.fbst .past{opacity:.4}.fbst .now{box-shadow:0 0 0 3px var(--coral)}
+/* ---------- SUPERMARCHÉ ---------- */
+.gbud{display:flex;justify-content:space-between;margin-top:10px}.gbud small{display:block;font-size:12px;opacity:.9}.gbud b{font-size:22px;font-weight:900}.gbud .neg2{color:#FFD3D3}
+.gbar{height:9px;border-radius:6px;background:rgba(255,255,255,.3);margin-top:6px;overflow:hidden}.gbar i{display:block;height:100%;border-radius:6px;transition:width .3s}
+.gneeds{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.gneeds span{font-size:12.5px;padding:5px 9px;border-radius:999px;background:#FFF1E6;color:#B85A1F;font-weight:900}.gneeds span.ok{background:var(--good-bg);color:var(--good)}
+.gtabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin:0 -2px 6px;scrollbar-width:none}.gtabs::-webkit-scrollbar{display:none}
+.gtabs button{flex:none;border:none;border-radius:999px;padding:8px 12px;background:#F1F2F7;font-weight:900;font-size:13px;color:var(--ink)}.gtabs button.on{background:var(--ink);color:#fff}
+.glist{display:flex;flex-direction:column;gap:8px}
+.gi{display:flex;align-items:center;gap:10px;border:2px solid var(--line);border-radius:14px;padding:8px}
+.ge{font-size:28px;width:34px;text-align:center;flex:none}.gn{flex:1;min-width:92px}.gn b{display:block;font-size:14.5px}.gn small{color:var(--muted);font-size:12px}
+.gv{display:flex;gap:6px;flex:none}
+.gb{position:relative;border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;background:#fff;padding:5px 8px;text-align:center;min-width:76px;color:var(--ink)}
+.gb b{display:block;font-size:14px}.gb small{display:block;font-size:10.5px;color:var(--muted);font-weight:800;line-height:1.2}
+.gb.on{border-color:var(--good);background:var(--good-bg)}.gb i{position:absolute;top:-8px;right:-8px;background:var(--good);color:#fff;border-radius:999px;font-style:normal;font-size:11px;font-weight:900;min-width:20px;height:20px;display:grid;place-items:center;padding:0 5px}
+.gb:active{transform:translateY(2px);border-bottom-width:2px}
+.gcart{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding:10px;border-radius:14px;background:#F7F8FB;min-height:44px;align-items:center;font-size:13px}
+.gc{border:none;background:#fff;border-radius:999px;padding:4px 6px 4px 9px;font-size:16px;box-shadow:0 1px 4px rgba(0,0,0,.1);display:flex;align-items:center;gap:4px;font-weight:900;color:var(--ink)}.gc span{background:#FDE8E8;color:var(--bad);border-radius:50%;width:18px;height:18px;display:grid;place-items:center;font-size:12px}
+.ticket{font-family:ui-monospace,Menlo,Consolas,monospace;background:#FFFDF6;border:1.5px dashed #D9D4C7;border-radius:12px;padding:10px 12px;margin:0 0 10px;font-size:13px;max-height:220px;overflow:auto}
+.ticket div{display:flex;justify-content:space-between;gap:8px;padding:2px 0}.ticket small{color:var(--muted)}.ticket .tt{border-top:1.5px dashed #D9D4C7;margin-top:6px;padding-top:6px;font-size:15px}
+@media (max-width:420px){.gi{flex-wrap:wrap}.gv{width:100%;justify-content:flex-end}}
+/* ---------- MAISON ---------- */
+#home{position:fixed;inset:0;z-index:6;background:radial-gradient(circle at 50% 30%,#FFF4E3,#F2D9B8 70%,#E9C9A0)}
+#home3d{position:absolute;inset:0}#home3d canvas{touch-action:none}
+.hhead{position:absolute;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));display:flex;align-items:center;gap:8px;z-index:3}
+.hhead .bback{background:rgba(255,255,255,.92);color:var(--ink);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.hmoney{flex:1;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.hmoney span{background:#fff;border-radius:999px;padding:7px 12px;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.hpanel{position:absolute;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:3;display:flex;justify-content:center;pointer-events:none}
+.hp{pointer-events:auto;background:#fff;border-radius:18px;padding:10px 12px;box-shadow:0 8px 22px rgba(0,0,0,.16);max-width:460px;width:100%;text-align:center;font-size:14px}
+.hpb{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px}.hpb button{border:none;border-radius:12px;padding:8px 11px;background:#F1F2F7;font-weight:900;font-size:13px;color:var(--ink)}
+.hbar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));z-index:3;display:flex;gap:6px;background:#fff;border-radius:22px;padding:6px;box-shadow:0 8px 22px rgba(0,0,0,.16);max-width:calc(100% - 20px)}
+.hbar button{border:none;background:none;border-radius:16px;padding:7px 10px;font-weight:900;font-size:12px;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;white-space:nowrap}
+.hbar button span{font-size:22px}.hbar button.main{background:var(--indigo);color:#fff}
+#homefb{position:absolute;inset:90px 12px 170px;overflow:auto}.hfb{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px}.hfb div{background:#fff;border-radius:14px;padding:10px;text-align:center;font-size:30px}.hfb small{display:block;font-size:11px}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
+.citem{border:2px solid var(--line);border-radius:16px;padding:10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px}
+.citem.sel{border-color:var(--indigo)}.citem b{font-size:13.5px;line-height:1.2}.citem small{color:var(--muted);font-size:12px}
+.ce{width:54px;height:54px;border-radius:14px;display:grid;place-items:center;font-size:32px;background:#F7F8FB}
+.cb{margin-top:auto;border:none;border-radius:12px;padding:8px 12px;background:#F59E0B;color:#fff;font-weight:900;font-size:13px;width:100%}.cb:disabled{opacity:.45}.cb.ghost{background:#F1F2F7;color:var(--muted)}
+/* ---------- ORDINATEUR / BOURSE ---------- */
+.pc{background:#1E2235;border-radius:20px;padding:6px;color:var(--ink)}
+.pcbar{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:6px 10px 8px;font-weight:900;font-size:14px}.pcbar button{border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:10px;width:32px;height:32px;font-weight:900}
+.pcbody{background:#F7F8FB;border-radius:14px;padding:14px;min-height:300px}
+.pcdesk{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:18px 6px;background:linear-gradient(135deg,#BFE3FF,#E9F7DF);border-radius:12px}
+.app{border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:900;font-size:13px;color:var(--ink);text-align:center}
+.app span{width:62px;height:62px;border-radius:18px;display:grid;place-items:center;font-size:30px;box-shadow:0 6px 14px rgba(0,0,0,.15)}
+.pchead{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-bottom:10px}.pchead b{font-size:17px}.pchead small{width:100%;color:var(--muted);font-size:12px}
+.pchead .bk{border:none;background:#E6E8F0;border-radius:10px;width:32px;height:32px;font-weight:900}
+.pfol{display:flex;justify-content:space-between;background:#fff;border-radius:14px;padding:10px 12px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,.05)}.pfol small{display:block;color:var(--muted);font-size:12px}.pfol b{font-size:18px}
+.stk{display:flex;align-items:center;gap:10px;width:100%;border:none;background:#fff;border-radius:14px;padding:10px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,.05);text-align:left;color:var(--ink)}
+.stk .si{font-size:26px}.stk .sn{flex:1;min-width:0}.stk .sn b{display:block}.stk .sn small{color:var(--muted);font-size:11.5px}.stk .sp{width:80px;flex:none}.stk .sv{text-align:right;flex:none}.stk .sv b{display:block;font-size:14px}.stk .sv small{font-size:12px;font-weight:900}
+.news div{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:6px 0;border-bottom:1.5px dashed var(--line)}.news div:last-child{border:none}
+.sbig b{font-size:28px;font-weight:900;margin-right:8px}.sbig span{font-weight:900;font-size:13px}
+.chart{background:#fff;border-radius:14px;padding:8px 4px;margin:8px 0}.sdesc{font-size:13.5px;color:#45485A;margin:4px 0 8px;line-height:1.4}
+/* ---------- TUTO ---------- */
+#tuto{position:fixed;inset:0;z-index:45;pointer-events:none}#tuto:empty{display:none}
+#tuto>*{pointer-events:auto}
+.tdim{position:fixed;inset:0;background:rgba(20,22,40,.62)}.tdim.clear{background:transparent}
+.tspot{position:fixed;border-radius:18px;box-shadow:0 0 0 9999px rgba(20,22,40,.62),0 0 0 4px #F7C948;transition:all .35s cubic-bezier(.2,.9,.3,1.1);pointer-events:none}
+.tbub{position:fixed;left:50%;transform:translateX(-50%);width:min(420px,calc(100% - 24px));background:#fff;border-radius:22px;padding:16px 16px 12px;box-shadow:0 18px 40px rgba(0,0,0,.3);animation:up .3s}
+.tbub.mid{top:50%;transform:translate(-50%,-50%)}
+.tbub>b{display:block;font-size:19px;font-weight:900;margin:6px 0 4px}.tbub p{margin:0 0 8px;font-size:15px;line-height:1.45;color:#45485A}
+.tcap{display:flex;align-items:center;gap:8px}.tcap img{width:48px;height:48px;border-radius:14px;animation:bob2 1.6s ease-in-out infinite}.tcap span{font-size:30px}
+.tfoot{display:flex;align-items:center;gap:8px;margin-top:6px}.tdots{flex:1;display:flex;gap:4px}.tdots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.tdots i.on{background:var(--indigo);width:18px;border-radius:4px}
+.tskip{border:none;background:none;color:var(--muted);font-weight:900;font-size:13px;padding:8px}
+.tnext{border:none;background:var(--indigo);color:#fff;border-radius:14px;padding:10px 16px;font-weight:900;font-size:14.5px;box-shadow:0 3px 0 var(--indigo-d)}.tnext:disabled{opacity:.4}
+.tquiz{display:grid;gap:8px;margin:4px 0 8px}.tquiz .obb{padding:10px 12px;font-size:14px}.tfb{font-weight:900}
+.tgoals{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}.tgoals span{background:#F4F6FB;border-radius:14px;padding:8px 4px;text-align:center;font-size:22px}.tgoals b{display:block;font-size:11.5px;line-height:1.2;color:var(--ink);margin-top:3px}
+/* ---------- ONBOARDING : âge ---------- */
+.agepick{display:flex;align-items:baseline;justify-content:center;gap:8px;margin:4px 0 8px}.agepick b{font-size:64px;font-weight:900;color:var(--indigo);line-height:1}.agepick span{font-size:20px;color:var(--muted)}
+.agerange{width:100%;accent-color:#3F3FD4;height:28px}
+/* ---------- MENU ---------- */
+.filters button{padding:9px 13px}
+.filters .fhome{background:#FFF3E0;color:#D9822B}
+@media (max-width:400px){.filters button{padding:9px 9px;font-size:12px}.filters svg{width:18px;height:18px}}
+
+/* ---------- À L'INTÉRIEUR D'UN BÂTIMENT ---------- */
+body.inroom #modal .ov{background:linear-gradient(180deg,rgba(25,27,45,0) 0%,rgba(25,27,45,.12) 40%,rgba(25,27,45,.45) 100%)}
+@media (min-width:640px){body.inroom #modal .ov{justify-content:flex-end;padding-right:4vw;background:linear-gradient(90deg,rgba(25,27,45,0) 40%,rgba(25,27,45,.35))}}
+body.inroom .sthead,body.inroom #stctrl{opacity:0;pointer-events:none;transition:opacity .3s}
+@media (max-width:480px){
+ .paper{padding:11px;font-size:12.5px}.ph{flex-wrap:wrap;gap:8px}.pdoc{width:100%;text-align:left!important;padding-top:6px;border-top:1px dashed #EEE}
+ .pco b{font-size:14px}.pmid{flex-direction:column;gap:6px}.pmid>div:last-child{text-align:left!important}
+ .ptab td{font-size:12px}.ptab .ptot td{font-size:14px}.pstamp{font-size:13px;padding:2px 7px}
+ .kpis{grid-template-columns:repeat(2,1fr)}.kpi b{font-size:16px}.dgrid{grid-template-columns:1fr}
+ .bignums b{font-size:14px}.b503 b{font-size:15px}.hbars>div{grid-template-columns:92px 1fr auto}
+ .pcbody{padding:10px}.pctabs button{padding:7px 10px;font-size:12px}
+ .wallet b{white-space:nowrap}
+}
+/* ---------- CONSÉQUENCES & PRIME ---------- */
+.conseq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-2px 0 10px}.conseq>div{display:flex;gap:5px;flex-wrap:wrap}
+.bonus{background:linear-gradient(90deg,#FFF6D6,#FFEFC2);border:2px solid #F7C948;color:#8A6200;border-radius:14px;padding:9px 12px;font-size:14.5px;margin-bottom:10px;animation:pop .45s cubic-bezier(.3,1.7,.6,1)}
+/* ---------- FACTURES / FICHE DE PAIE ---------- */
+.paper{background:#fff;border:1.5px solid #E6E8F0;border-radius:6px;box-shadow:0 10px 24px rgba(30,30,60,.14),0 1px 0 #ddd;padding:14px;margin:0 0 12px;font-size:13px;position:relative;color:#2F3142;transform-origin:50% 0}
+.paper.drop{animation:paperIn .5s cubic-bezier(.2,.9,.3,1.2)}@keyframes paperIn{from{transform:translateY(-30px) rotate(-3deg);opacity:0}}
+.ph{display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:2px solid #F1F2F7}
+.plogo{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:22px;flex:none}
+.pco{flex:1;min-width:0}.pco b{display:block;font-size:15px}.pco small,.pdoc small,.pmid small{display:block;color:var(--muted);font-size:11px}
+.pdoc{text-align:right}.pdoc b{font-size:12px;text-transform:uppercase;letter-spacing:.3px}
+.pmid{display:flex;justify-content:space-between;gap:10px;padding:10px 0}.pmid b{font-size:14px}
+.ptab{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}.ptab th{text-align:left;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1.5px solid #E6E8F0;padding:5px 0}
+.ptab th:last-child,.ptab td:last-child{text-align:right;white-space:nowrap}.ptab td{padding:6px 0;border-bottom:1px dashed #EEE;font-weight:700}.ptab td small{color:var(--muted)}
+.ptab .ptot td{font-size:15px;font-weight:900;border-bottom:none;border-top:2px solid #2F3142;padding-top:8px}
+.pfoot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;color:var(--muted)}
+.pstamp{border:3px solid #E5484D;color:#E5484D;font-weight:900;font-size:16px;padding:2px 10px;border-radius:8px;transform:rotate(-8deg);letter-spacing:2px;opacity:.85;animation:stamp .5s .35s cubic-bezier(.3,1.8,.5,1) backwards}
+.pstamp.in{border-color:#24A866;color:#24A866}@keyframes stamp{from{transform:scale(2.4) rotate(-8deg);opacity:0}}
+.ptip{margin-top:10px;background:#F4F6FB;border-radius:10px;padding:8px 10px;font-size:12.5px;line-height:1.4;color:#45485A}
+.paper.slip{border-top:5px solid #24A866}
+/* ---------- ORDINATEUR PRO ---------- */
+.sheet.wide{max-width:920px}
+.pctabs{display:flex;gap:4px;padding:0 4px 6px;overflow-x:auto;scrollbar-width:none}.pctabs::-webkit-scrollbar{display:none}
+.pctabs button{flex:none;border:none;background:rgba(255,255,255,.08);color:#C9CED8;border-radius:12px;padding:8px 12px;font-weight:900;font-size:13px;display:flex;gap:6px;align-items:center}
+.pctabs button.on{background:#fff;color:var(--ink)}
+.dhead{display:flex;align-items:center;gap:10px;margin-bottom:10px}.dhead>div:first-child{width:46px;height:46px;border-radius:50%;overflow:hidden;flex:none}.dhead b{display:block;font-size:17px}.dhead small{color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:10px}
+.kpi{background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 2px 6px rgba(0,0,0,.05)}.kpi small{display:block;color:var(--muted);font-size:11.5px}.kpi b{font-size:18px;font-weight:900}.kpi span{display:block;font-size:11px;color:var(--muted)}
+.kpi.big{background:linear-gradient(135deg,#3F3FD4,#8B5CF6);color:#fff}.kpi.big small,.kpi.big span{color:rgba(255,255,255,.85)}.kpi.neg b{color:var(--bad)}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.dcard{background:#fff;border-radius:16px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.05)}.dct{font-weight:900;font-size:14px;margin-bottom:8px}
+.donut{display:flex;align-items:center;gap:12px}.donut>div{flex:1}.dl{display:flex;align-items:center;gap:6px;font-size:12.5px;padding:3px 0}.dl i{width:10px;height:10px;border-radius:3px}.dl span{flex:1}
+.leg{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:#45485A;margin-top:4px}.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.hbars>div{display:grid;grid-template-columns:110px 1fr auto;gap:8px;align-items:center;font-size:12px;padding:3px 0}.hbars i{height:9px;border-radius:6px;background:#F1F2F7;overflow:hidden}.hbars i b{display:block;height:100%;background:#3F3FD4;border-radius:6px}.hbars em{font-style:normal;font-weight:900}
+.mini{display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0}.mini span:first-child{flex:1}.mini .sp{width:90px}
+.lnk{border:none;background:none;color:var(--indigo);font-weight:900;font-size:13px;padding:6px 0}
+.tips{display:flex;flex-direction:column;gap:6px}.tip{border-radius:10px;padding:8px 10px;font-size:12.5px;line-height:1.35;background:var(--neu-bg);color:var(--indigo-d)}.tip.good{background:var(--good-bg);color:#17734A}.tip.bad{background:var(--bad-bg);color:#B3262B}.tip.warn{background:#FFF1E0;color:#A65B00}
+.simtabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}.simtabs::-webkit-scrollbar{display:none}.simtabs button{flex:none;border:2px solid var(--line);background:#fff;border-radius:999px;padding:7px 11px;font-weight:900;font-size:12.5px;color:var(--ink)}.simtabs button.on{border-color:var(--indigo);color:var(--indigo);background:var(--neu-bg)}
+.simgrid{display:grid;grid-template-columns:minmax(220px,1fr) minmax(0,1.7fr);gap:12px}@media (max-width:640px){.simgrid{grid-template-columns:1fr}}
+.simctl,.simout{background:#fff;border-radius:16px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+.sld{display:block;margin-bottom:10px}.sld span{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);font-weight:900}.sld span b{color:var(--ink);font-size:14px}.sld input{width:100%;accent-color:#3F3FD4}
+.presets{display:flex;flex-wrap:wrap;gap:6px}.presets button{border:none;background:#F1F2F7;border-radius:10px;padding:6px 9px;font-weight:900;font-size:12px;color:var(--ink)}
+.bignums{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}.bignums div{background:#F7F8FB;border-radius:12px;padding:8px}.bignums small{display:block;font-size:11px;color:var(--muted)}.bignums b{font-size:16px;font-weight:900}
+.snote{font-size:12.5px;color:#45485A;line-height:1.4;margin:8px 0 0}
+.ctab{width:100%;font-size:12.5px;margin-top:6px}.ctab td{padding:4px 0}.ctab td:last-child{text-align:right;font-weight:900}.ctab i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.b503{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.b503 div{border-radius:12px;padding:10px;background:color-mix(in srgb,var(--c) 12%,#fff);border:2px solid var(--c)}.b503 small{display:block;font-size:11.5px;font-weight:900;color:var(--c)}.b503 b{font-size:17px}.b503 span{display:block;font-size:11px;color:var(--muted);line-height:1.25}
+.chead b{font-size:17px;display:block}.chead small{color:var(--muted)}.chead .gb{height:8px;border-radius:6px;background:var(--line);overflow:hidden}.chead .gb i{display:block;height:100%;background:linear-gradient(90deg,#F7A23B,#24A866)}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:12px}
+.lcard{border:none;background:#fff;border-radius:16px;padding:12px;text-align:left;box-shadow:0 2px 6px rgba(0,0,0,.05);border-top:5px solid var(--c);color:var(--ink)}.lcard span{font-size:28px}.lcard b{display:block;font-size:14.5px;margin:4px 0 2px}.lcard small{color:var(--muted);font-size:12px}
+.lhero{display:flex;align-items:center;gap:12px;background:var(--c);color:#fff;border-radius:16px;padding:14px;margin:4px 0 10px}.lhero span{font-size:36px}.lhero b{display:block;font-size:19px}.lhero small{opacity:.9}
+.lsecs{display:flex;flex-direction:column;gap:8px}.lsec{display:flex;gap:10px;align-items:flex-start;background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+.ln{width:26px;height:26px;border-radius:50%;background:var(--neu-bg);color:var(--indigo);font-weight:900;display:grid;place-items:center;flex:none}.lsec>div:nth-child(2){flex:1}.lsec b{font-size:14.5px}.lsec p{margin:3px 0 0;font-size:13.5px;line-height:1.45;color:#45485A}
+.lfig{flex:none;align-self:center;font-weight:900;font-size:15px;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);border-radius:12px;padding:8px 10px;text-align:center}
+.lq{background:#fff;border-radius:14px;padding:10px 12px;margin-bottom:8px}.lq p{margin:0 0 8px;font-size:14px}.lqo{display:grid;gap:6px}
+.lqo button{border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;background:#fff;padding:9px;font-weight:800;font-size:13.5px;text-align:left;color:var(--ink)}.lqo button.right{border-color:var(--good);background:var(--good-bg);color:#17734A}.lqo button.wrong{border-color:var(--bad);background:var(--bad-bg);color:#B3262B}.lqo button:disabled{opacity:1}
 </style>
 </head>
 <body>
@@ -249,7 +411,7 @@ input.name{width:100%;font:inherit;font-size:17px;font-weight:800;padding:11px 1
   <div class="haze"></div>
   <div id="labels"></div>
   <div class="calcard"><div class="band"></div><div class="rg" style="left:36px"></div><div class="rg" style="right:36px"></div><b>MA<br>VIE</b><small id="calAge"></small></div>
-  <div class="topr"><button class="chipbtn" id="timeBtn" data-a="daymode" aria-label="Jour ou nuit">☀️</button><button class="chipbtn" id="instBtn" data-a="install">📲 Installer l’app</button></div>
+  <div class="topr"><button class="chipbtn" id="timeBtn" data-a="daymode" aria-label="Jour ou nuit">☀️</button><button class="chipbtn" data-a="help" aria-label="Comment jouer">❓ Comment jouer</button><button class="chipbtn" id="instBtn" data-a="install">📲 Installer l’app</button></div>
   <div class="hint" id="hint">👆 Glisse pour tourner la ville · touche un bâtiment</div>
   <button class="wallet" data-a="bilanCity" aria-label="Mon argent">
     <div class="ring"><svg viewBox="0 0 58 58"><defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#E5484D"/><stop offset="1" stop-color="#F7A23B"/></linearGradient></defs>
@@ -259,6 +421,7 @@ input.name{width:100%;font:inherit;font-size:17px;font-weight:800;padding:11px 1
   </button>
   <div class="filters">
     <button data-a="creator" aria-label="Mon personnage"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg>Moi</button>
+    <button data-a="home" class="fhome" aria-label="Ma maison"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 11h3v9h5v-6h4v6h5v-9h3z"/></svg>Maison</button>
     <button data-a="bilanCity" aria-label="Mon bilan"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="12" width="4" height="9" rx="1.5"/><rect x="10" y="7" width="4" height="14" rx="1.5"/><rect x="17" y="3" width="4" height="18" rx="1.5"/></svg>Bilan</button>
     <button data-a="settings" aria-label="Réglages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="8.5" cy="12" r="5.5"/><circle cx="15.5" cy="12" r="5.5"/></svg>Options</button>
   </div>
@@ -365,14 +528,7 @@ const COMMON={
      {t:'Je fixe un budget par catégorie',fx:{joy:2},ok:1,f:'Fixer des limites (courses, sorties…) aide à tenir son budget sans y penser.'},
      {t:'Pas besoin',ok:null,f:'Un budget écrit, c’est plus fiable que la mémoire.'}]},
  ],
- quiz:[
-  {lvl:1,q:'Épargner, c’est…',o:['Garder de l’argent pour plus tard','Tout dépenser','Emprunter'],a:0,f:'L’épargne, c’est ton coussin de sécurité 🐷'},
-  {lvl:1,q:'Une facture, c’est…',o:['Ce que tu dois payer pour un service','Un cadeau','Un billet de banque'],a:0,f:'Électricité, internet, téléphone… chaque service a sa facture.'},
-  {lvl:1,q:'Si tu dépenses plus que ce que tu gagnes…',o:['Tu t’endettes','Tu deviens riche','Il ne se passe rien'],a:0,f:'C’est la règle n°1 : dépenser moins que ce qu’on gagne.'},
-  {lvl:3,q:'Avec 2 % d’inflation par an, 1 000 € vaudront dans 10 ans environ…',o:['980 €','820 €','500 €'],a:1,f:'1 000 ÷ 1,02¹⁰ ≈ 820 € de pouvoir d’achat. L’argent qui dort perd de la valeur.'},
-  {lvl:3,q:'Un crédit de 10 000 € à 5 % sur 5 ans coûte environ en intérêts…',o:['130 €','1 300 €','5 000 €'],a:1,f:'Environ 1 320 € d’intérêts. Toujours regarder le coût total !'},
-  {lvl:3,q:'Le PEA permet, après 5 ans…',o:['De ne pas payer d’impôt sur les gains (hors prélèvements sociaux)','D’emprunter sans intérêt','De ne jamais perdre d’argent'],a:0,f:'Le PEA est une enveloppe fiscale avantageuse pour investir en actions européennes… mais le risque reste là.'},
- ],
+ quiz:[], // → js/content.js
  luck:[
   {e:'👖',t:'Billet oublié',q:'En faisant une machine, tu retrouves un billet de 20 € dans la poche d’un vieux jean !',o:[{t:'Super !',fx:{money:20},ok:null,f:'Petite chance du jour 🍀'}]},
   {e:'🎁',t:'Cadeau de mamie',q:'Mamie t’envoie 50 € pour t’encourager.',o:[
@@ -440,14 +596,11 @@ const baseFixed=(mult=1)=>{
   const subs=G.subs.reduce((a,s)=>a+s.a,0);if(subs)f.push({d:16,ic:'📺',t:'Abonnements',a:-subs,cat:'factures'});
   return[...f,...groceries(Math.round(60*mult))];
 };
-const groceries=a=>[6,13,20,27].map(d=>({d,ic:'🛒',t:'Courses de la semaine',a:-a,cat:'courses'}));
+const groceries=a=>[6,13,20,27].map(d=>({d,ic:'🛒',t:'Courses au supermarché',a:-a,cat:'courses',groc:1}));
 const BASE=[
 {key:'work',lot:'work',t:'Mon premier emploi',ic:'💼',place:'Bureau',col:'#3F3FD4',age:18,y:2026,m:8,goal:150,
  desc:'Ton premier vrai travail ! Attention : ton salaire n’arrive qu’à la FIN du mois. Tiendras-tu jusque-là ?',
- intro:{e:'💼',t:'Ton premier emploi',q:'Tu as 18 ans et tu vis encore chez tes parents. Tu as 300 € de côté grâce à ton job d’été. Quel premier emploi choisis-tu ?',o:[
-   {t:'Vendeur·se en boulangerie',s:'1 450 €/mois · réveil à 5 h 😴',fx:{job:{n:'Boulangerie',sal:1450,f:1},joy:-3},ok:null,f:'Bon salaire pour débuter, mais il faudra se lever tôt !'},
-   {t:'Vendeur·se en magasin de sport',s:'1 400 €/mois · travail le samedi',fx:{job:{n:'Magasin de sport',sal:1400,f:1}},ok:null,f:'Un job dynamique, avec des réductions sur le matériel !'},
-   {t:'Alternance dans un studio de jeux vidéo',s:'1 050 €/mois · tu apprends un métier',fx:{job:{n:'Studio de jeux vidéo',sal:1050,f:1.15},joy:4},ok:1,f:'Moins payé aujourd’hui… mais ton salaire grimpera plus vite ensuite. C’est un investissement sur toi-même !'}]},
+ intro:()=>jobIntro(),
  fixed:()=>[{d:5,ic:'🏡',t:'Participation à la maison',a:-100,cat:'logement'},{d:9,ic:'📱',t:'Forfait téléphone',a:-15,cat:'factures'},{d:13,ic:PM().ic,t:PM().trn,a:-Math.round(30*PM().tr),cat:'transport'}],
  deck:{
   choice:[
@@ -472,12 +625,7 @@ const BASE=[
      {t:'Oui, 100 € chaque mois',fx:{autoSave:100},ok:1,f:'Se payer en premier : l’épargne part avant que tu puisses la dépenser 💪'},
      {t:'Non, je verrai en fin de mois',ok:0,f:'En fin de mois, il reste souvent… rien 😅'}]},
   ],
-  quiz:[
-   {q:'Sur ta fiche de paie, l’argent que tu reçois vraiment s’appelle…',o:['Le salaire brut','Le salaire net','Le salaire total'],a:1,f:'Brut − cotisations = net. C’est le net qui arrive sur ton compte.'},
-   {q:'Les cotisations prélevées sur ton salaire servent à payer…',o:['La santé, le chômage et la retraite','Le cadeau de ton patron','Rien du tout'],a:0,f:'Ce sont elles qui financent l’hôpital, ta future retraite…'},
-   {q:'Une période d’essai, c’est…',o:['Des vacances','Un temps pour voir si le poste te convient (et à ton patron aussi)','Une prime'],a:1,f:'Pendant cette période, chacun peut arrêter le contrat facilement.'},
-   {q:'Tu gagnes 1 450 € et tu épargnes 10 %. Ça fait…',o:['14,50 €','145 €','1 450 €'],a:1,f:'10 % de 1 450 € = 145 €. Petit à petit, ça devient beaucoup !'},
-  ],
+  quiz:[], // → js/content.js
   shop:[
    {e:'👟',t:'Chaussures de travail',q:'Tu restes debout toute la journée et tes baskets sont usées.',o:[
      {t:'Bonnes chaussures confortables (70 €)',fx:{money:-70,cat:'achats',joy:2},ok:1,f:'Un achat utile pour ton travail = un bon achat.'},
@@ -522,12 +670,7 @@ const BASE=[
      {t:'Je tape au mur',fx:{joy:-4},ok:0,f:'L’ambiance devient tendue dans l’immeuble…'},
      {t:'Bouchons d’oreilles (5 €)',fx:{money:-5,cat:'achats'},ok:null,f:'Ça marche… mais le problème reste.'}]},
   ],
-  quiz:[
-   {q:'Le dépôt de garantie (la caution), c’est…',o:['Un cadeau au propriétaire','Une somme qu’on te rend en partant si tout est en bon état','Un impôt'],a:1,f:'C’est pour ça que l’état des lieux est si important !'},
-   {q:'L’APL, c’est…',o:['Une aide de l’État pour payer ton loyer','Une assurance','Une appli de musique'],a:0,f:'Selon tes revenus, la CAF peut t’aider à payer ton loyer.'},
-   {q:'Ton loyer ne devrait pas dépasser… de tes revenus.',o:['Un tiers','La moitié','Les trois quarts'],a:0,f:'Au-delà, il ne reste plus assez pour vivre et épargner.'},
-   {q:'Quand on est locataire, l’assurance habitation est…',o:['Obligatoire','Interdite','Inutile'],a:0,f:'Elle te protège en cas de dégât des eaux, d’incendie…'},
-  ],
+  quiz:[], // → js/content.js
   shop:[
    {e:'📺',t:'Grande télé',q:'Une télé géante à 600 € pour ton salon.',o:[
      {t:'Je l’achète',fx:{money:-600,cat:'achats',joy:6},ok:0,f:'Le premier mois dans un logement est déjà très cher… Était-ce le bon moment ?'},
@@ -571,12 +714,7 @@ const BASE=[
      {t:'J’installe une appli de budget',fx:{joy:2},ok:1,f:'Noter ses dépenses, c’est LA base : on découvre souvent des surprises !'},
      {t:'Je ne regarde pas, ça me stresse',fx:{joy:-2},ok:0,f:'Fermer les yeux ne fait pas disparaître les dépenses…'}]},
   ],
-  quiz:[
-   {q:'Une dépense « fixe », c’est…',o:['Une dépense qui revient chaque mois (loyer, forfait…)','Une glace au chocolat','Un objet cassé'],a:0,f:'Les dépenses fixes, on les connaît à l’avance : c’est la base du budget.'},
-   {q:'Règle 50/30/20 : les 20 % servent…',o:['Aux loisirs','À l’épargne','Au loyer'],a:1,f:'50 % besoins, 30 % envies, 20 % épargne.'},
-   {q:'Un café à 3 € chaque jour de travail, ça fait par an environ…',o:['60 €','660 €','6 000 €'],a:1,f:'3 € × 220 jours = 660 € ! Les petites dépenses font les grandes sommes.'},
-   {q:'Comparer le « prix au kilo » sert à…',o:['Trouver le produit vraiment le moins cher','Faire du sport','Rien'],a:0,f:'Le gros paquet n’est pas toujours le moins cher au kilo !'},
-  ],
+  quiz:[], // → js/content.js
   shop:[
    {e:'👕',t:'Nouveaux vêtements',q:'Envie de renouveler ta garde-robe.',o:[
      {t:'Grande enseigne (60 €)',fx:{money:-60,cat:'achats',joy:3},ok:null,f:'Sympa… mais vite usé.'},
@@ -615,12 +753,7 @@ const BASE=[
      {t:'Je paye le prix affiché',fx:{money:-900,cat:'achats',joy:5},ok:null,f:'Pas de souci, mais tu aurais peut-être pu négocier.'},
      {t:'Canapé d’occasion (250 €)',fx:{money:-250,cat:'achats',joy:4},ok:1,f:'Malin !'}]},
   ],
-  quiz:[
-   {q:'Une voiture neuve perd environ… de sa valeur la 1re année.',o:['2 %','20 %','80 %'],a:1,f:'C’est la « décote ». Une occasion récente évite cette grosse perte.'},
-   {q:'Le TAEG d’un crédit, c’est…',o:['Le coût total du crédit, en %','Le prix de la voiture','Une marque de voiture'],a:0,f:'Plus le TAEG est élevé, plus le crédit coûte cher. Compare-le toujours !'},
-   {q:'La garantie légale sur un produit neuf dure…',o:['2 mois','2 ans','20 ans'],a:1,f:'2 ans, gratuitement, pour tous les produits neufs achetés en France.'},
-   {q:'La meilleure façon de financer un gros achat ?',o:['Un crédit à la consommation','L’épargne mise de côté avant','La chance'],a:1,f:'Épargner avant, c’est zéro intérêt à payer et zéro stress.'},
-  ],
+  quiz:[], // → js/content.js
   shop:[
    {e:'📱',t:'Smartphone dernier cri',q:'Le nouveau modèle sort : 1 300 €.',o:[
      {t:'Je le veux !',fx:{money:-1300,cat:'achats',joy:5},ok:0,f:'Le modèle de l’an dernier fait la même chose pour moitié prix…'},
@@ -671,13 +804,7 @@ const BASE=[
      {t:'Oui, 260 € par mois',fx:{autoSave:260},ok:1,f:'« Se payer en premier » : la meilleure habitude financière du monde.'},
      {t:'Non, je préfère gérer à la main',ok:null,f:'Possible, mais il faut beaucoup de discipline !'}]},
   ],
-  quiz:[
-   {q:'L’assurance-vie, c’est surtout…',o:['Un placement pour épargner et transmettre','Une assurance pour ta voiture','Un crédit'],a:0,f:'Malgré son nom, c’est une enveloppe d’épargne très utilisée en France, avantageuse après 8 ans.'},
-   {q:'Les intérêts composés, c’est…',o:['Gagner des intérêts sur tes intérêts','Un impôt','Une dette'],a:0,f:'C’est l’effet boule de neige : plus tu attends, plus ça grossit ☃️'},
-   {q:'Diversifier, c’est…',o:['Mettre tous ses œufs dans le même panier','Répartir son argent sur plusieurs placements','Tout dépenser'],a:1,f:'Si un placement baisse, les autres compensent.'},
-   {q:'À 7 % par an, ton argent double en environ…',o:['3 ans','10 ans','40 ans'],a:1,f:'La règle de 72 : 72 ÷ 7 ≈ 10 ans.'},
-   {q:'« Rendement énorme » + « sans risque », c’est…',o:['Une arnaque probable','Une bonne affaire','Un Livret A'],a:0,f:'Plus on te promet de gagner, plus le risque est grand. Toujours.'},
-  ],
+  quiz:[], // → js/content.js
   shop:[
    {e:'🎰',t:'Le loto',q:'Le super jackpot est à 100 millions ! Un ticket coûte 20 €.',o:[
      {t:'Non merci',ok:1,f:'La chance de gagner est d’environ 1 sur 140 millions…'},
@@ -731,12 +858,7 @@ const BASE=[
      {t:'Je paye avec mon épargne de précaution',fx:{pay:1200,cat:'imprevus'},ok:1,f:'Propriétaire, c’est toi qui paies les réparations : l’épargne de précaution est indispensable !'},
      {t:'Crédit conso à 9 %',fx:{money:-1300,cat:'imprevus'},ok:0,f:'Un crédit pour une réparation coûte plus cher. Avoir de l’argent de côté évite ça.'}]},
   ],
-  quiz:[
-   {q:'Dans l’ancien, les frais de notaire représentent environ…',o:['1 % du prix','8 % du prix','30 % du prix'],a:1,f:'Environ 7 à 8 % : il faut les prévoir en plus du prix !'},
-   {q:'Les banques prêtent si tes mensualités ne dépassent pas…',o:['15 % de tes revenus','35 % de tes revenus','70 % de tes revenus'],a:1,f:'C’est la règle des 35 % pour éviter le surendettement.'},
-   {q:'Le PTZ, c’est…',o:['Un prêt à taux zéro pour un premier achat','Une taxe sur les maisons','Un placement'],a:0,f:'Sous conditions de revenus, l’État aide les primo-accédants.'},
-   {q:'Emprunter 200 000 € sur 25 ans à 3,6 % coûte en intérêts environ…',o:['10 000 €','100 000 €','200 000 €'],a:1,f:'Environ 103 000 € d’intérêts ! D’où l’intérêt de négocier le taux et la durée.'},
-  ],
+  quiz:[], // → js/content.js
   shop:[
    {e:'🛋️',t:'Meubler le salon',q:'Ton nouveau salon est vide.',o:[
      {t:'Tout neuf (4 500 €)',fx:{pay:4500,cat:'achats',joy:7},ok:0,f:'Après un achat immobilier, mieux vaut garder une épargne de sécurité…'},
@@ -753,9 +875,7 @@ const BASE=[
 const EXTRA={
 pocket:{key:'pocket',lot:'school',t:'Mon argent de poche',ic:'🪙',place:'École',col:'#F59E0B',age:12,y:2020,m:2,goal:8,start:20,payName:'Argent de poche',noCommon:true,
  desc:'20 € par mois rien que pour toi ! Bonbons, cartes, jeux… sauras-tu en garder un peu dans ta tirelire ?',
- intro:{e:'🪙',t:'Ton argent de poche',q:'Tu as 12 ans. Tes parents te proposent un marché pour ton argent de poche. Que choisis-tu ?',o:[
-   {t:'20 € par mois, à gérer tout·e seul·e',ok:1,f:'Gérer un budget pour tout le mois, c’est apprendre à prévoir !'},
-   {t:'20 € + 5 € si j’aide à la maison',s:'Vaisselle, poubelles, ranger…',fx:{pocketBonus:5},ok:1,f:'Gagner de l’argent grâce à ses efforts : bravo ! Tu toucheras 5 € de plus le 15.'}]},
+ intro:()=>pocketIntro(),
  fixed:()=>[{d:9,ic:'📱',t:'Ta part du forfait téléphone',a:-3,cat:'factures'},...(G.pocketBonus?[{d:15,ic:'🧹',t:'Bonus coups de main',a:5,cat:'revenu'}]:[])],
  deck:{
   choice:[
@@ -777,12 +897,7 @@ pocket:{key:'pocket',lot:'school',t:'Mon argent de poche',ic:'🪙',place:'Écol
      {t:'Je lui donne sans rien dire',fx:{money:-5,cat:'autre',joy:2},ok:null,f:'Gentil ! Mais il a oublié de te rembourser…'},
      {t:'Je refuse',ok:null,f:'Tu as le droit de dire non.'}]},
   ],
-  quiz:[
-   {q:'Tu as 20 € et tu dépenses 12 €. Il te reste…',o:['6 €','8 €','12 €'],a:1,f:'20 − 12 = 8 €.'},
-   {q:'Une tirelire sert à…',o:['Garder de l’argent pour plus tard','Acheter des bonbons','Jouer'],a:0,f:'Épargner, c’est garder pour plus tard 🐷'},
-   {q:'Lequel est un BESOIN ?',o:['Un manteau en hiver','Un jeu vidéo','Une figurine'],a:0,f:'Un besoin, c’est ce dont on ne peut pas se passer.'},
-   {q:'Tu mets 2 € de côté chaque semaine. Après 10 semaines, tu as…',o:['12 €','20 €','2 €'],a:1,f:'10 × 2 = 20 € ! Les petites sommes deviennent grandes.'},
-  ],
+  quiz:[], // → js/content.js
   shop:[
    {e:'🧸',t:'Peluche géante',q:'Elle coûte 15 € au magasin de jouets.',o:[
      {t:'Je l’achète',fx:{money:-15,cat:'achats',joy:4},ok:null,f:'Toute douce… mais presque tout ton argent de poche !'},
@@ -820,10 +935,7 @@ pocket:{key:'pocket',lot:'school',t:'Mon argent de poche',ic:'🪙',place:'Écol
   ]}},
 summer:{key:'summer',lot:'snack',t:'Mon job d’été',ic:'☀️',place:'Snack',col:'#E8A600',age:16,y:2024,m:6,goal:150,start:150,payName:'Paie du job d’été',
  desc:'À 16 ans, tu peux travailler pendant les vacances. Ton premier vrai salaire… et tes premières grosses tentations !',
- intro:{e:'☀️',t:'Ton premier job d’été',q:'Tu as 16 ans et c’est l’été. Quel job choisis-tu ?',o:[
-   {t:'Animateur·rice en centre de loisirs',s:'650 € · tu adores les enfants',fx:{summer:{n:'Animation',sal:650},joy:4},ok:null,f:'Un job qui a du sens… et qui prépare au BAFA !'},
-   {t:'Serveur·se au snack de la plage',s:'750 € · rythme intense',fx:{summer:{n:'Snack de la plage',sal:750}},ok:null,f:'Bien payé, et parfois des pourboires !'},
-   {t:'Cueillette des fruits',s:'700 € · dur mais en plein air',fx:{summer:{n:'Cueillette',sal:700},joy:-2},ok:null,f:'Physique… mais tu vas être en super forme.'}]},
+ intro:()=>summerIntro(),
  fixed:()=>[{d:5,ic:'📱',t:'Ta part du forfait téléphone',a:-10,cat:'factures'},{d:12,ic:PM().ic,t:PM().trn,a:-Math.round(20*PM().tr),cat:'transport'}],
  deck:{
   choice:[
@@ -845,12 +957,7 @@ summer:{key:'summer',lot:'snack',t:'Mon job d’été',ic:'☀️',place:'Snack'
      {t:'Je l’ouvre avec 50 €',fx:{toSavings:50},ok:1,f:'Ton argent travaille pour toi, sans aucun risque.'},
      {t:'Plus tard',ok:null,f:'Pense-y : plus tôt tu commences, mieux c’est.'}]},
   ],
-  quiz:[
-   {q:'À 16 ans, tu peux travailler…',o:['Pendant les vacances, avec l’accord de tes parents','Jamais','Uniquement la nuit'],a:0,f:'Dès 14 ans pendant les vacances, avec des règles pour protéger les jeunes.'},
-   {q:'Le SMIC, c’est…',o:['Le salaire minimum légal','Une marque de baskets','Une aide pour les vacances'],a:0,f:'Aucun employeur ne peut payer moins (avec quelques exceptions pour les moins de 18 ans).'},
-   {q:'Tu gagnes 700 € et tu en épargnes la moitié. Ça fait…',o:['70 €','350 €','700 €'],a:1,f:'700 ÷ 2 = 350 €.'},
-   {q:'Ton salaire NET, c’est…',o:['Ce que tu reçois vraiment','Le salaire avant les cotisations','Une prime'],a:0,f:'Brut − cotisations = net.'},
-  ],
+  quiz:[], // → js/content.js
   shop:[
    {e:'👟',t:'Baskets édition limitée',q:'Tout le monde en parle : 160 €.',o:[
      {t:'Je les achète',fx:{money:-160,cat:'achats',joy:5},ok:null,f:'Stylé ! Mais était-ce prévu dans ton budget ?'},
@@ -864,7 +971,11 @@ summer:{key:'summer',lot:'snack',t:'Mon job d’été',ic:'☀️',place:'Snack'
   ]}},
 };
 let PAR=BASE;
-function buildTrack(){const a=G.persona?G.persona.age:'young';return[...(a==='kid'?[EXTRA.pocket,EXTRA.summer]:a==='teen'?[EXTRA.summer]:[]),...BASE]}
+function buildTrack(){const P=G.persona||{},a=P.age||'young',n=P.ageN||(a==='kid'?12:a==='teen'?16:18);
+  if(a==='kid')return[{...EXTRA.pocket,age:clamp(n,8,13)},EXTRA.summer,...BASE];
+  if(a==='teen')return[{...EXTRA.summer,age:clamp(n,14,17)},...BASE];
+  // Adultes : on commence à l'étape la plus proche de son âge (en gardant au moins 3 étapes)
+  let i=0;BASE.forEach((p,k)=>{if(p.age<=n)i=k});return BASE.slice(Math.min(i,BASE.length-3))}
 const LV=()=>G.persona?G.persona.level:2;
 const goalOf=P=>Math.max(5,Math.round(P.goal*[.7,1,1.3][LV()-1]/5)*5);
 const introOf=P=>typeof P.intro==='function'?P.intro():P.intro;
@@ -880,8 +991,9 @@ const LVN=['','Débutant','Intermédiaire','Expert'];
 const PLN={city:'🏙️ Grande ville',town:'🏘️ Petite ville',country:'🌾 Campagne'};
 const DREAMS={travel:{ic:'✈️',n:'Voyager partout',cost:5000},house:{ic:'🏡',n:'Avoir ma maison',cost:30000},car:{ic:'🚗',n:'Une super voiture',cost:15000},help:{ic:'💝',n:'Aider les autres',cost:3000},business:{ic:'🚀',n:'Créer mon entreprise',cost:20000}};
 const ONB=[
- {k:'age',e:'🎂',q:'Quel âge as-tu ?',sub:'Ta vie dans le jeu commencera au bon moment',two:1,o:[['kid','8 – 13 ans','🧒'],['teen','14 – 17 ans','🧑‍🎓'],['young','18 – 25 ans','🧑'],['adult','26 ans et +','🧑‍💼']]},
+ {k:'age',e:'🎂',q:'Quel âge as-tu ?',sub:'Ta vie dans le jeu commencera à ton âge, avec des situations adaptées'},
  {k:'place',e:'📍',q:'Où vis-tu ?',sub:'Ta ville dans le jeu va lui ressembler',o:[['city','En grande ville','🏙️'],['town','Dans une petite ville','🏘️'],['country','À la campagne','🌾']]},
+ {k:'field',e:'🧭',q:'Qu’est-ce qui t’attire le plus ?',sub:'On te proposera des métiers qui te ressemblent',two:1,o:[['tech','La tech & le numérique','💻'],['care','La santé & les autres','🩺'],['shop','Le commerce & la vente','🛍️'],['craft','L’artisanat & le bâtiment','🔧'],['art','La création & l’art','🎨'],['nature','La nature & les animaux','🌾'],['food','La cuisine & la restauration','🍽️'],['sport','Le sport & l’action','🏅']]},
  {k:'exp',multi:1,e:'🎒',q:'Qu’as-tu déjà dans ta vie ?',sub:'Coche tout ce qui est vrai (ou rien du tout !)',two:1,o:[['pocket','De l’argent de poche','🪙'],['bank','Un compte en banque','💳'],['job','Un job ou un salaire','💼'],['home','Mon propre logement','🔑'],['save','Des économies','🐷'],['invest','Des placements','📈']]},
  {k:'style',e:'💸',q:'Quand tu as un peu d’argent, tu…',o:[['spender','Le dépenses vite','🛍️'],['saver','Le gardes précieusement','🐿️'],['balanced','Un peu des deux','⚖️']]},
  {k:'dream',e:'🌟',q:'Quel est ton plus grand rêve ?',sub:'Il apparaîtra dans ta ville !',o:Object.entries(DREAMS).map(([k,d])=>[k,d.n,d.ic])},
@@ -897,11 +1009,16 @@ let OB={i:0,ans:{exp:[]},qi:0,score:0,picked:null};
 function showOnb(){$('#city').classList.add('hidden');$('#onb').classList.remove('hidden');renderOnb()}
 function renderOnb(){
   const el=$('#onb'),N=ONB.length;let h='';
-  if(OB.i===0){h=`<div class="em">🏙️</div><h2>Bienvenue dans Capylum !</h2><p class="sub">Ici, tu vas vivre une vie en accéléré : argent de poche, jobs, logement, achats, avenir…<br><br>Mais d’abord, faisons connaissance : <b>6 petites questions</b> pour créer une vie qui <b>te ressemble</b>.</p>
+  if(OB.i===0){h=`<div class="em">🏙️</div><h2>Bienvenue dans Capylum !</h2><p class="sub">Ici, tu vas vivre ta vie en accéléré : argent de poche, jobs, logement, achats, avenir…</p>
+    <div class="tgoals" style="margin:0 0 14px"><span>🏙️<b>Avance dans ta ville</b></span><span>🛒<b>Entre dans les magasins et fais tes choix</b></span><span>⭐<b>Gagne des étoiles, décore ta maison</b></span></div>
+    <p class="sub">D’abord, faisons connaissance : <b>${N} petites questions</b> pour créer une vie qui <b>te ressemble</b>.</p>
     <button class="btn" data-a="obNext">C’est parti !</button>`}
   else if(OB.i<=N){const s=ONB[OB.i-1];
     h=`<div class="obp"><i style="width:${(OB.i-1)/N*100}%"></i></div><div class="em">${s.e}</div><h2>${s.q}</h2><p class="sub">${s.sub||''}</p>`;
-    if(s.k==='quiz'){const list=OQ[OB.ans.age||'young'],q=list[OB.qi],p=OB.picked;
+    if(s.k==='age'){const n=OB.ans.ageN||15;
+      h+=`<div class="agepick"><b id="ageN">${n}</b><span>ans</span></div><input type="range" class="agerange" min="8" max="70" value="${n}" oninput="OBAGE(this.value)">
+        <p class="sub" id="ageHint" style="margin:8px 0 6px">${ageHint(n)}</p><button class="btn" data-a="obAge">Valider</button>`}
+    else if(s.k==='quiz'){const list=OQ[OB.ans.age||'young'],q=list[OB.qi],p=OB.picked;
       h+=`<p style="text-align:center;font-weight:900;color:var(--indigo);margin:-6px 0 8px">Question ${OB.qi+1} / 3</p><p style="text-align:center;font-size:17px;margin:0 0 14px">${q.q}</p><div class="obo">`+
         q.o.map((o,i)=>`<button class="obb ${p==null?'':i===q.a?'right':i===p?'wrong':''}" data-a="obQuiz" data-v="${i}" ${p!=null?'disabled':''}>${o}</button>`).join('')+'</div>'+
         (p!=null?`<button class="btn" data-a="obNext">${OB.qi<2?'Question suivante':'Voir mon profil ✨'}</button>`:'')}
@@ -913,6 +1030,7 @@ function renderOnb(){
     h=`<div class="pcard"><div class="big">${a.e}</div><b>${a.n}</b><div>${a.d}</div><div class="pchips"><span>🧠 ${LVN[P.level]}</span><span>${PLN[P.place]}</span><span>🌟 ${d.ic} ${d.n}</span></div></div>
     <div class="lbl" style="margin-bottom:4px">Ta vie est adaptée à toi :</div><ul class="adapt">
       <li>🗓️ Tu commences à <b>${first.age} ans</b> : « ${first.ic} ${first.t} », puis ${track.length-1} autres étapes de vie jusqu’à ${track[track.length-1].age} ans.</li>
+      <li>${FIELDS[P.field][0]} Attiré·e par ${FIELDS[P.field][1].toLowerCase()} : on te proposera des métiers dans ce domaine.</li>
       <li>${P.place==='city'?'🏙️ Grande ville : gratte-ciel et métro, mais <b>loyers +30 %</b>.':P.place==='country'?'🌾 Campagne : fermes et champs, <b>loyers −25 %</b>, mais il faut se déplacer en voiture (<b>transport ×1,7</b>).':'🏘️ Petite ville : des prix « moyens » pour tout.'}</li>
       <li>🧠 Niveau ${LVN[P.level]} (${P.score}/3 au test) : ${P.level===1?'objectifs plus doux, moins d’imprévus et quiz simples.':P.level===3?'objectifs plus ambitieux, plus d’imprévus et quiz avancés !':'objectifs et quiz standards.'}</li>
       <li>🌟 Ton rêve ${d.ic} est construit dans la ville : chaque euro épargné t’en rapproche.</li>
@@ -920,14 +1038,18 @@ function renderOnb(){
     <button class="btn" data-a="obDone">Créer mon personnage →</button><button class="btn ghost" data-a="obRestart">↺ Refaire le questionnaire</button>`}
   el.innerHTML=`<div class="ob">${h}</div>`;
 }
+function ageHint(n){return n<=13?'🧒 Tu commenceras avec ton argent de poche, à '+n+' ans.':n<=17?'🧑‍🎓 Tu commenceras par ton premier job d’été.':n<=19?'🧑 Tu commenceras par ton premier vrai emploi.':
+  n<=21?'🔑 Tu commenceras par ton premier logement.':n<=24?'🛒 Tu commenceras par la gestion du quotidien.':'🚗 Tu commenceras par les grands achats, puis l’avenir et la maison.'}
+function OBAGE(v){OB.ans.ageN=+v;const a=$('#ageN'),h=$('#ageHint');if(a)a.textContent=v;if(h)h.textContent=ageHint(+v)}
 function finishOnb(){
   const a=OB.ans,exp=a.exp.length,k=OB.score+(exp>=4?2:exp>=2?1:0)+(a.age==='adult'?1:0);
-  G.persona={age:a.age,place:a.place||'town',exp:a.exp,style:a.style||'balanced',dream:a.dream||'travel',score:OB.score,level:k<=1?1:k<=3?2:3};
-  save();
+  G.persona={age:a.age,ageN:a.ageN||15,place:a.place||'town',field:a.field||'shop',exp:a.exp,style:a.style||'balanced',dream:a.dream||'travel',score:OB.score,level:k<=1?1:k<=3?2:3};
+  G.age=buildTrack()[0].age;save();
 }
 const A_ONB={
   obNext:()=>{const s=ONB[OB.i-1];if(s&&s.k==='quiz'){if(OB.qi<2){OB.qi++;OB.picked=null;return renderOnb()}OB.i++;finishOnb();return renderOnb()}OB.i++;renderOnb()},
-  obPick:v=>{const s=ONB[OB.i-1];OB.ans[s.k]=v;beep('tap');OB.i++;if(s.k==='age'){OB.qi=0;OB.score=0;OB.picked=null}renderOnb()},
+  obPick:v=>{const s=ONB[OB.i-1];OB.ans[s.k]=v;beep('tap');OB.i++;renderOnb()},
+  obAge:()=>{const n=OB.ans.ageN||15;OB.ans.ageN=n;OB.ans.age=AGE_BRACKET(n);OB.qi=0;OB.score=0;OB.picked=null;beep('tap');OB.i++;renderOnb()},
   obToggle:v=>{const e=OB.ans.exp;OB.ans.exp=e.includes(v)?e.filter(x=>x!==v):[...e,v];renderOnb()},
   obQuiz:v=>{const q=OQ[OB.ans.age||'young'][OB.qi];OB.picked=+v;if(+v===q.a){OB.score++;beep('ok')}else beep('bad');renderOnb()},
   obBack:()=>{if(ONB[OB.i-1]&&ONB[OB.i-1].k==='quiz'&&OB.qi>0){OB.qi--;OB.picked=null;return renderOnb()}OB.i=Math.max(0,OB.i-1);if(ONB[OB.i-1]&&ONB[OB.i-1].k==='quiz'){OB.qi=0;OB.score=0;OB.picked=null}renderOnb()},
@@ -943,6 +1065,7 @@ function coachHTML(st){
   if(G.persona.style==='spender')m=st[1]?'Tu as dompté ton côté papillon ce mois-ci, bravo ! 🦋':`Ton plus gros poste de dépenses : ${top?CATS[top[0]]:'—'}. Astuce : attends 24 h avant chaque achat plaisir.`;
   else if(G.persona.style==='saver')m=st[2]?'Tu épargnes ET tu gardes le moral : parfait ! 🐿️':'Tu épargnes bien, mais pense aussi à te faire plaisir : le moral compte !';
   else m=st[0]&&st[1]?'Équilibre parfait ce mois-ci 🦉 Prochaine étape : faire travailler ton épargne.':'Regarde les factures à venir dans le calendrier pour ne jamais être dans le rouge.';
+  const w=weakSpot();if(w)m+=`<br>🎯 Ton point à travailler : <b>${SKN[w.k]}</b> (${w.a}/${w.b} bons réflexes). Le jeu t’en proposera un peu plus pour t’entraîner.`;
   return`<div class="verdict neu" style="margin:12px 0 0"><b>${a.e} Conseil pour toi</b><p>${m}</p></div>`;
 }
 function dreamModal(){const d=DREAMS[G.persona.dream],p=dreamPct();
@@ -963,7 +1086,7 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}}
 function load(){try{const r=localStorage.getItem(KEY);if(r){G={...fresh(),...JSON.parse(r)};R=G.run}}catch(e){}}
 const nextIdx=()=>{for(let i=0;i<PAR.length;i++)if(!G.done[i])return i;return PAR.length};
 const salary=i=>{const P=PAR[i];if(P.key==='pocket')return 20;if(P.key==='summer')return G.summer?G.summer.sal:650;if(P.key==='work')return G.job?G.job.sal:1400;return Math.round(P.base*(G.job?G.job.f:1)*G.boost/10)*10};
-const wealth=()=>G.money+G.savings+G.invest;
+const wealth=()=>G.money+G.savings+G.invest+(typeof portValue==='function'?portValue():0);
 
 /* =========================================================
    SONS / TOASTS / CONFETTIS
@@ -1035,22 +1158,14 @@ function chips(fx){
 function startParcours(i){
   const P=PAR[i],practice=!!G.done[i];
   const snap=JSON.stringify({...G,run:null});
-  if(i===0&&!practice&&!G.done[0])G.money=P.start??300;
+  if(i===0&&!practice&&!G.done[0]){G.money=P.start??300;if(!['work','pocket','summer'].includes(P.key))startKit(P)}
   G.age=P.age;G.joy=Math.round(55+(G.joy-55)*.4);if(P.onStart)P.onStart();if(G.car&&G.car.value&&P.key!=='big')G.car.value=Math.round(G.car.value*.85);
   R=G.run={p:i,practice,snap,phase:'intro',pos:1,days:new Date(P.y,P.m+1,0).getDate(),wd0:(new Date(P.y,P.m,1).getDay()+6)%7,
     squares:[],fixed:[],fdone:{},decks:{},log:[],spent:{},earned:0,start:{money:G.money,savings:G.savings+G.invest,joy:G.joy},minMoney:G.money,pending:null,rot:{x:0,y:0},paid:false};
   G.screen='board';save();showBoard();
   openIntro();
 }
-function buildBoard(){
-  const P=PAR[R.p];R.fixed=P.fixed();const lv=LV(),W={...WEIGHTS,event:WEIGHTS.event*[.7,1,1.4][lv-1],luck:WEIGHTS.luck*[1.4,1,.8][lv-1]};
-  for(let d=1;d<=R.days;d++){
-    const wd=(R.wd0+d-1)%7,fx=R.fixed.filter(f=>f.d===d);let type;
-    if(d===1)type='start';else if(d===R.days)type='pay';else if(fx.length)type='fixed';else if(wd===6)type='rest';else if(wd===5)type='sortie';
-    else{const tot=Object.values(W).reduce((a,b)=>a+b,0);let r=Math.random()*tot;type='choice';for(const[k,w]of Object.entries(W)){r-=w;if(r<=0){type=k;break}}}
-    R.squares.push({d,type,wd});
-  }
-}
+/* buildBoard (étapes du mois dans la rue) : voir js/street.js */
 function cardsOf(type){const P=PAR[R.p],lv=LV();return[...(P.deck[type]||[]),...(P.noCommon?[]:(COMMON[type]||[]))].filter(c=>!c.lvl||(c.lvl===1?lv<=2:lv>=c.lvl))}
 function drawCard(type){const L=cardsOf(type);
   for(let k=0;k<40;k++){if(!R.decks[type]||!R.decks[type].length)R.decks[type]=shuffle(L.map((_,i)=>i));const i=R.decks[type].pop();if(!L[i].cond||L[i].cond(G))return i}
@@ -1065,26 +1180,9 @@ function openIntro(){
   const c=introOf(PAR[R.p]);R.pending={intro:true};save();
   showCard(c,{n:'Nouveau chapitre',tc:PAR[R.p].col},null);
 }
-async function roll(){
-  if(!R||R.busy||R.phase!=='play'||R.pending)return;R.busy=true;renderControls();
-  const n=1+Math.floor(Math.random()*6);beep('dice');
-  const face={1:[0,0],2:[0,-90],3:[-90,0],4:[90,0],5:[0,90],6:[0,180]}[n];
-  R.rot.x=Math.round(R.rot.x/360)*360+720+face[0];R.rot.y=Math.round(R.rot.y/360)*360+720+face[1];
-  const d=$('#dice');if(d)d.style.transform=`rotateX(${R.rot.x}deg) rotateY(${R.rot.y}deg)`;
-  await sleep(1050);
-  for(let s=0;s<n&&R.pos<R.days;s++){R.pos++;placePawn(true);beep('step');await sleep(270);processFixed(R.pos);updateHud()}
-  R.busy=false;save();renderBoard();land();
-}
-function land(){
-  const sq=R.squares[R.pos-1];
-  if(R.pos>=R.days)return payday();
-  if(sq.type==='rest'){G.joy=clamp(G.joy+2,0,100);toast('☀️ Dimanche : repos ! +2 😊','pos');save();renderBoard();return}
-  if(sq.type==='fixed'||sq.type==='start')return;
-  const idx=drawCard(sq.type);R.pending={type:sq.type,idx};save();
-  const card=cardsOf(sq.type)[idx];
-  if(card.pre&&!R.pending.preDone){apply(card.pre);R.pending.preDone=true}
-  showCard(card,TYPES[sq.type],sq);
-}
+/* roll / land (marcher puis entrer dans un bâtiment) : voir js/street.js */
+function roll(){}
+function land(){}
 function showCard(card,meta,sq){
   const OPTS=optsOf(card),isQuiz=!OPTS[0]||typeof OPTS[0]==='string';
   const day=sq?`${JOURS[sq.wd]} ${sq.d}`:`${MOIS[PAR[R.p].m]} · ${PAR[R.p].age} ans`;
@@ -1092,22 +1190,24 @@ function showCard(card,meta,sq){
   const opts=OPTS.map((o,i)=>{
     if(isQuiz)return`<button class="opt" data-a="choose" data-v="${i}"><span>${o}</span></button>`;
     const dis=(o.need&&G.money+G.savings<o.need)||!!o.deny;
-    return`<button class="opt" data-a="choose" data-v="${i}" ${dis?'disabled':''}><span>${o.t}${o.s?`<small>${o.s}</small>`:''}${o.deny?`<small class="neg">${o.deny}</small>`:dis?'<small>💸 Pas assez d’argent</small>':''}</span><span class="chips">${chips(o.fx)}</span></button>`}).join('');
-  modal(`<div class="sh"><div class="ty"><span>${meta.ic||''} ${meta.n}</span><span>${day}</span></div><div class="em">${card.e||'🧠'}</div><h3>${card.t||'Question'}</h3></div>
+    return`<button class="opt" data-a="choose" data-v="${i}" ${dis?'disabled':''}><span>${o.t}${o.s?`<small>${o.s}</small>`:''}${o.deny?`<small class="neg">${o.deny}</small>`:dis?'<small>💸 Pas assez d’argent</small>':''}</span></button>`}).join('');
+  modal(`<div class="sh"><div class="ty"><span>${meta.place?`${meta.place.ic} ${meta.place.n} · `:''}${meta.ic||''} ${meta.n}</span><span>${day}</span></div><div class="em">${card.e||'🧠'}</div><h3>${card.t||'Question'}</h3></div>
     <div class="sb"><p>${q}</p><div class="opts">${opts}</div></div>`,meta.tc||PAR[R.p].col);
 }
 function choose(i){
   if(!R||!R.pending||R.pending.res)return;i=+i;
   const pd=R.pending,intro=pd.intro,card=intro?introOf(PAR[R.p]):cardsOf(pd.type)[pd.idx];
-  const OPTS=optsOf(card),isQuiz=typeof OPTS[0]==='string';let ok,f,title;
+  const OPTS=optsOf(card),isQuiz=typeof OPTS[0]==='string';let ok,f,title;const b4=snapMoney();
   if(isQuiz){ok=i===card.a?1:0;f=(ok?'':`La bonne réponse : <b>${card.o[card.a]}</b>. `)+card.f;if(ok)G.joy=clamp(G.joy+3,0,100)}
   else{const o=OPTS[i];if((o.need&&G.money+G.savings<o.need)||o.deny)return;ok=o.ok;f=o.f;apply(o.fx,`${card.e||''} ${card.t}`);if(G._note){f=G._note+' '+f;delete G._note}}
-  beep(ok===1?'ok':ok===0?'bad':'coin');
-  const v=ok===1?['good',isQuiz?'Bonne réponse ! +3 😊':'Bon réflexe ! 👍']:ok===0?['bad',isQuiz?'Raté !':'Aïe… 😬']:['neu','C’est ton choix 🤷'];
+  beep(ok===1?'ok':ok===0?'bad':'coin');track(intro?'intro':pd.type,ok);
+  const conseq=conseqHTML(b4);const bonus=ok===1?rewardGood():0;
+  const v=ok===1?['good',isQuiz?'Bonne réponse ! 🎉':'Bon réflexe ! 👍']:ok===0?['bad',isQuiz?'Raté !':'Aïe… 😬']:['neu','C’est ton choix 🤷'];
   pd.res=true;save();
   const meta=intro?{tc:PAR[R.p].col}:TYPES[pd.type];
   modal(`<div class="sh"><div class="ty"><span>${intro?'Nouveau chapitre':meta.ic+' '+meta.n}</span></div><div class="em">${card.e||'🧠'}</div><h3>${card.t||'Question'}</h3></div>
     <div class="sb"><div class="verdict ${v[0]}"><b>${v[1]}</b><p>💡 ${f}</p></div>
+    ${conseq}${bonus?`<div class="bonus">🏅 Prime « bon réflexe » : <b>+${fmt(bonus)}</b> sur ton compte</div>`:''}
     <div class="row"><span>💳 Compte</span><b class="${G.money<0?'neg':''}">${fmt(G.money)}</b></div><div class="row"><span>🐷 Épargne</span><b>${fmt(G.savings)}</b></div>
     <button class="btn" data-a="cont">Continuer</button></div>`,meta.tc||PAR[R.p].col);
   updateHud();
@@ -1116,7 +1216,7 @@ function cont(){
   closeModal();if(!R)return;
   const intro=R.pending&&R.pending.intro;R.pending=null;
   if(intro){buildBoard();R.phase='play';processFixed(1);save();renderBoard();
-    toast(`🎲 Lance le dé pour avancer dans le mois !`);return}
+    toast('🚶 Touche « Avancer » pour marcher jusqu’au prochain bâtiment !');return}
   save();renderBoard();
 }
 
@@ -1132,8 +1232,8 @@ function payday(){
 function showBilanOrPay(){R.phase==='pay'?showPay():showBilan()}
 function showPay(){
   const s=salary(R.p),pcts=[0,.1,.2,.3],avail=Math.max(0,G.money);
-  modal(`<div class="sh"><div class="ty"><span>💶 Jour de paie</span><span>${JOURS[R.squares[R.days-1].wd]} ${R.days}</span></div><div class="em">💶</div><h3>${PAR[R.p].payName?PAR[R.p].payName+' : c’est arrivé !':'Ton salaire est arrivé !'}</h3></div>
-  <div class="sb"><p><b class="pos">+${fmt(s)}</b> sur ton compte.${G.autoSave?` Ton épargne automatique de ${fmt(G.autoSave)} est déjà partie dans ta tirelire 🐷`:''}<br>Combien veux-tu mettre de côté <b>tout de suite</b>, avant de dépenser ?</p>
+  modal(`<div class="sh"><div class="ty"><span>💶 Jour de paie</span><span>${JOURS[(R.wd0+R.days-1)%7]} ${R.days}</span></div><div class="em">💶</div><h3>${PAR[R.p].payName?PAR[R.p].payName+' : c’est arrivé !':'Ton salaire est arrivé !'}</h3></div>
+  <div class="sb">${payslipHTML(s)}<p><b class="pos">+${fmt(s)}</b> sur ton compte.${G.autoSave?` Ton épargne automatique de ${fmt(G.autoSave)} est déjà partie dans ta tirelire 🐷`:''}<br>Combien veux-tu mettre de côté <b>tout de suite</b>, avant de dépenser ?</p>
   <div class="amts">${pcts.map(p=>`<button class="${R.payPct===p?'on':''}" data-a="payPct" data-v="${p}">${p*100} %<br><small>${fmt(Math.min(avail,s*p))}</small></button>`).join('')}</div>
   <p style="font-size:13px;color:var(--muted);margin:8px 0 0">💡 « Se payer en premier » : on épargne le jour de la paie, pas avec ce qui reste à la fin.</p>
   <button class="btn" data-a="payOk">Voir mon bilan du mois</button></div>`,'#24A866');
@@ -1162,10 +1262,12 @@ function showBilan(){
     <button class="btn ghost" data-a="replay">Rejouer ce mois</button></div>`,P.col);
   if(n===3)confetti();beep('win');
 }
+const keepOf=()=>({char:G.char,sound:G.sound,stars:G.stars,done:G.done,persona:G.persona,home:G.home,mkt:G.mkt,port:G.port,skill:G.skill,seen:G.seen,tuto:G.tuto,daymode:G.daymode,lessons:G.lessons,nw:G.nw,lastSpent:G.lastSpent});
 function finish(n){
-  const i=R.p,practice=R.practice,first=!G.done[i];
+  const i=R.p,practice=R.practice,first=!G.done[i],stats={ok:R.okN||0,tot:R.okT||0},spent={...R.spent},earned=R.earned,pt=PAR[i].t;
   const best=Math.max(G.stars[i]||0,+n);
-  if(practice){const keep={char:G.char,sound:G.sound,stars:G.stars,done:G.done};G={...fresh(),...JSON.parse(R.snap),...keep}}
+  if(practice){const keep=keepOf();G={...fresh(),...JSON.parse(R.snap),...keep}}
+  adaptAfterRun(stats,+n,practice);mktMonth();if(!practice){G.lastSpent={t:pt,spent,earned};(G.nw=G.nw||[]).push({l:PAR[i].ic+' '+PAR[i].age+' ans',w:Math.round(wealth())})}
   G.stars[i]=best;G.done[i]=true;
   if(first)G.history.push({p:i,age:PAR[i].age,w:wealth()});
   G.run=null;R=null;G.screen='city';
@@ -1176,7 +1278,7 @@ function finish(n){
   if(first){confetti();toast(`🔓 Nouveau parcours : ${PAR[i+1].ic} ${PAR[i+1].t}`);city&&city.focus(i+1);
     if(!isStandalone()&&!G.instShown){G.instShown=true;save();setTimeout(()=>installModal(),2400)}}});
 }
-function replay(){const i=R.p;const keep={char:G.char,sound:G.sound,stars:G.stars,done:G.done};G={...fresh(),...JSON.parse(R.snap),...keep};
+function replay(){const i=R.p;const keep=keepOf();G={...fresh(),...JSON.parse(R.snap),...keep};
   G.run=null;R=null;closeModal();startParcours(i)}
 
 /* ---------- Final : projection vers l'avenir ---------- */
@@ -1199,57 +1301,18 @@ function showFinale(){
    RENDU DU PLATEAU
    ========================================================= */
 function showBoard(){$('#board').classList.remove('hidden');$('#city').classList.add('hidden');if(city)city.pause(true);renderBoard()}
-function showCity(){$('#board').classList.add('hidden');$('#city').classList.remove('hidden');if(city){city.pause(false);city.refreshChar()}renderCity()}
-const pips={1:[[2,2]],2:[[1,1],[3,3]],3:[[1,1],[2,2],[3,3]],4:[[1,1],[1,3],[3,1],[3,3]],5:[[1,1],[1,3],[2,2],[3,1],[3,3]],6:[[1,1],[2,1],[3,1],[1,3],[2,3],[3,3]]};
+function showCity(){$('#board').classList.add('hidden');const h=$('#home');if(h)h.classList.add('hidden');$('#city').classList.remove('hidden');if(city){city.pause(false);city.refreshChar()}renderCity()}
 function hudHTML(){
-  const P=PAR[R.p],saved=G.savings+G.invest-R.start.savings;
   return`<div class="stats">
     <div class="st ${G.money<0?'neg':''}"><small>💳 Compte</small><b id="hMoney">${fmt(G.money)}</b></div>
     <div class="st"><small>🐷 Épargne</small><b id="hSav">${fmt(G.savings)}</b></div>
     ${PAR[R.p].key==='future'||G.invest>0?`<div class="st"><small>📈 Placements</small><b>${fmt(G.invest)}</b></div>`:''}
     <div class="st"><small>😊 Moral</small><b>${Math.round(G.joy)}</b><div class="joybar"><i style="width:${G.joy}%"></i></div></div></div>`;
 }
-function renderBoard(){
-  if(!R)return;const P=PAR[R.p],saved=G.savings+G.invest-R.start.savings;
-  const lead=Array.from({length:R.wd0},()=>'<div class="tile empty"></div>').join('');
-  const tiles=R.squares.map(s=>{const t=TYPES[s.type],fx=R.fixed.filter(f=>f.d===s.d);
-    const ic=s.type==='fixed'?fx[0].ic:t.ic,amt=fx.length&&s.type!=='start'?fx.reduce((a,f)=>a+f.a,0):0;
-    return`<button class="tile ${s.d<R.pos?'past':''} ${s.d===R.pos?'now':''}" style="--tc:${t.c}" data-a="tile" data-v="${s.d}"><span class="n">${s.d}</span>${ic}${amt?`<span class="amt">${sign(amt).replace(' €','€')}</span>`:''}</button>`}).join('');
-  $('#board').innerHTML=`<div class="bwrap" style="--pc:${P.col}">
-    <div class="bhead"><div class="bh1"><button class="bback" data-a="toCity">← Ville</button>
-      <div class="btitle"><b>${P.ic} ${P.t}</b><small>${MOIS[P.m]} ${P.y} · ${P.age} ans${G.job?` · ${G.job.n}`:''}</small></div><div class="bav">${avatarSVG(G.char,46)}</div></div>
-      <div id="hud">${hudHTML()}</div></div>
-    <div class="bgrid"><div class="bmain"><div class="goal">🎯 <b>Objectif :</b> mettre <b>${fmt(goalOf(P))}</b> de côté ce mois-ci <span class="muted">(${sign(saved)})</span>
-      <div class="gb"><i style="width:${clamp(saved/goalOf(P)*100,0,100)}%"></i></div></div>
-    <div class="cal" id="cal"><div class="wk">${['L','M','M','J','V','S','D'].map(x=>`<div>${x}</div>`).join('')}</div>
-      <div class="grid">${lead}${tiles}</div><div class="pawn" id="pawn">${avatarSVG(G.char,40)}</div></div></div><div class="bside"><div class="sec">Mon relevé de compte</div>
-    <div class="stmt">${R.log.length?R.log.slice().reverse().map(l=>`<div class="r"><span><span class="d">${l.d} ${MC[P.m]}</span>${l.t}</span><b class="${l.cat==='epargne'?'sav':l.a<0?'neg':'pos'}">${l.a?sign(l.a):'✓'}</b></div>`).join(''):'<div class="r muted">Rien pour l’instant. Lance le dé !</div>'}</div></div></div>
-  </div>
-  <div class="controls" style="--pc:${P.col}"><div class="in" id="ctrl"></div></div>`;
-  renderControls();requestAnimationFrame(()=>placePawn(false));
-}
-function renderControls(){
-  const c=$('#ctrl');if(!c||!R)return;
-  const faces=[1,2,3,4,5,6].map(n=>`<div class="face f${n}">${pips[n].map(([r,cc])=>`<i style="grid-area:${r}/${cc}"></i>`).join('')}</div>`).join('');
-  const done=R.phase==='pay'||R.phase==='bilan';
-  c.innerHTML=`<div class="dwrap"><div class="dice" id="dice" style="transform:rotateX(${R.rot.x}deg) rotateY(${R.rot.y}deg)">${faces}</div></div>
-    <button class="rollbtn" data-a="${done?'bilan':'roll'}" ${R.busy||(R.phase==='play'&&R.pending)?'disabled':''}>${done?'📊 Voir mon bilan':R.busy?'…':'🎲 Lancer le dé'}</button>
-    <button class="sqbtn" data-a="piggy"><span>🐷</span>Épargne</button>`;
-}
+/* renderBoard / renderControls : voir js/street.js */
+function renderBoard(){}
+function renderControls(){}
 function updateHud(){const h=$('#hud');if(h&&R)h.innerHTML=hudHTML()}
-function placePawn(hop){
-  const p=$('#pawn'),t=document.querySelector(`.tile[data-v="${R.pos}"]`),cal=$('#cal');if(!p||!t||!cal)return;
-  p.style.left=(t.offsetLeft+t.offsetWidth/2-20)+'px';p.style.top=(t.offsetTop+t.offsetHeight/2-24)+'px';
-  document.querySelectorAll('.tile.now').forEach(x=>x.classList.remove('now'));t.classList.add('now');
-  document.querySelectorAll('.tile').forEach(x=>{const v=+x.dataset.v;if(v)x.classList.toggle('past',v<R.pos)});
-  if(hop){p.classList.remove('hop');void p.offsetWidth;p.classList.add('hop')}
-}
-function tileInfo(d){
-  const s=R.squares[d-1],fx=R.fixed.filter(f=>f.d===d);
-  if(s.type==='fixed'||(s.type==='start'&&fx.length))toast(`Le ${d} : ${fx.map(f=>`${f.ic} ${f.t} ${sign(f.a)}`).join(' · ')}`);
-  else if(s.type==='pay')toast(`Le ${d} : 💶 Jour de paie (+${fmt(salary(R.p))})`);
-  else toast(`Le ${d} : ${TYPES[s.type].ic} ${TYPES[s.type].n}`);
-}
 function piggy(){
   const inv=R&&PAR[R.p].key==='future';
   modal(`<div class="sh"><div class="em">🐷</div><h3>Ma tirelire</h3></div><div class="sb">
@@ -1288,6 +1351,8 @@ function openPar(i){
   <div class="sb"><p>${P.desc}</p>
     <div class="row"><span>📅 Mois</span><b>${MOIS[P.m]} ${P.y}</b></div>
     <div class="row"><span>🎯 Objectif</span><b>${fmt(goalOf(P))} de côté</b></div>
+    <div class="tgoals" style="margin:10px 0 2px"><span>✅<b>Jamais dans le rouge</b></span><span>🐷<b>Épargner ${fmt(goalOf(P))}</b></span><span>😊<b>Garder le moral</b></span></div>
+    <p style="font-size:13px;color:var(--muted);margin:6px 0 0;text-align:center">1 ⭐ par réussite · tu vas marcher dans ta rue et entrer dans les bâtiments</p>
     ${G.done[i]?`<div class="row"><span>Meilleur score</span><b>${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</b></div>`:''}
     <button class="btn" data-a="start" data-v="${i}">${G.done[i]?'🔁 Rejouer (entraînement)':'🎲 Commencer le mois'}</button>
     <button class="btn ghost" data-a="close">Plus tard</button></div>`,P.col);
@@ -1703,7 +1768,7 @@ function fallbackCity(){
    ========================================================= */
 const A={
   par:v=>openPar(v),close:closeModal,start:v=>{closeModal();const P=PAR[+v];city&&city.zoomTo(+v);wipe(P.col,P.ic,()=>startParcours(+v))},
-  roll,choose,cont,tile:v=>tileInfo(+v),piggy,bilan:()=>showBilanOrPay(),
+  roll,choose,cont,piggy,bilan:()=>showBilanOrPay(),
   payPct:v=>{R.payPct=+v;save();showPay()},
   payOk:()=>{const s=salary(R.p);if(R.payPct>0)toSav(Math.min(Math.max(0,G.money),s*R.payPct),'🐷 Épargne du jour de paie');R.phase='bilan';save();renderBoard();showBilan()},
   finish:v=>finish(v),replay,
@@ -1721,15 +1786,18 @@ const A={
       <div class="row"><span>💳 Compte</span><b class="${G.money<0?'neg':''}">${fmt(G.money)}</b></div><div class="row"><span>🐷 Épargne</span><b>${fmt(G.savings)}</b></div>
       <div class="row"><span>📈 Placements</span><b>${fmt(G.invest)}</b></div><div class="row"><span>😊 Moral</span><b>${Math.round(G.joy)}/100</b></div>
       <div class="row"><span>⭐ Étoiles</span><b>${st} / ${PAR.length*3}</b></div>
+      ${G.skill&&Object.keys(G.skill).length?`<div class="sec" style="margin:14px 0 4px">🧠 Tes réflexes (le jeu s’adapte)</div>${Object.entries(G.skill).filter(([k,v])=>SKN[k]&&v[1]).map(([k,[a,b]])=>`<div class="row"><span>${SKN[k]}</span><b class="${a/b>=.65?'pos':'neg'}">${a}/${b}</b></div>`).join('')}`:''}
       ${PAR.map((P,i)=>`<div class="row"><span>${P.ic} ${P.t}</span><b>${G.done[i]?'⭐'.repeat(G.stars[i]||0)+'☆'.repeat(3-(G.stars[i]||0)):'—'}</b></div>`).join('')}
       ${G.run?`<button class="btn" data-a="resume">▶ Reprendre ma partie en cours</button>`:''}
       <button class="btn ghost" data-a="close">Fermer</button></div>`)},
   resume:()=>{closeModal();if(G.run){R=G.run;G.screen='board';showBoard();resumeModal()}},
   settings:()=>modal(`<div class="sh"><div class="em">⚙️</div><h3>Options</h3></div><div class="sb">
     <div class="row"><span>🔊 Sons</span><button class="btn ghost" style="width:auto;margin:0;padding:8px 14px" data-a="snd">${G.sound?'Activés':'Coupés'}</button></div>
+    <button class="btn ghost" data-a="tutoAgain">🎓 Revoir le tuto</button>
     <button class="btn ghost" data-a="install">📲 Installer l’application</button>
     <button class="btn ghost" data-a="reset" style="color:var(--bad)">↺ Nouveau profil, nouvelle vie</button><button class="btn" data-a="close">Fermer</button></div>`),
   snd:()=>{G.sound=!G.sound;save();A.settings()},
+  tutoAgain:()=>{closeModal();tour('city',true)},
   reset:()=>modal(`<div class="sh" style="--tc:#E5484D"><div class="em">↺</div><h3>Nouvelle vie ?</h3></div><div class="sb"><p>Toute ta progression sera effacée.</p><button class="btn" style="--tc:#E5484D" data-a="resetOk">Oui, tout recommencer</button><button class="btn ghost" data-a="close">Annuler</button></div>`),
   resetOk:()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()},
   closeFin:()=>{closeModal();city&&city.focus(PAR.length-1)},dream:()=>dreamModal(),
@@ -1741,35 +1809,17 @@ function resumeModal(){
   if(R.phase==='intro'){R.pending=null;return openIntro()}
   if(R.phase==='pay')return showPay();
   if(R.phase==='bilan')return showBilan();
-  if(R.pending&&!R.pending.res){const sq=R.squares[R.pos-1];showCard(cardsOf(R.pending.type)[R.pending.idx],TYPES[R.pending.type],sq)}
+  if(R.pending&&R.pending.groc&&!R.pending.res)return openGroceries();
+  if(R.pending&&!R.pending.res){const sq=R.stops[R.si];showCard(cardsOf(R.pending.type)[R.pending.idx],{...TYPES[R.pending.type],place:PLACES[sq.pl]},sq)}
   else if(R.pending&&R.pending.res){R.pending=null;save();renderBoard()}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const f=A[b.dataset.a];if(f)f(b.dataset.v)});
-window.addEventListener('resize',()=>{if(R&&!$('#board').classList.contains('hidden'))placePawn(false)});
 
 function hideLoader(){const l=$('#loader');if(l&&!l.classList.contains('gone')){l.classList.add('gone');setTimeout(()=>l.remove(),900)}}
 let LP={x:innerWidth/2,y:innerHeight/2};document.addEventListener('pointerdown',e=>{LP={x:e.clientX,y:e.clientY}},true);
 function wipe(color,emoji,cb){const w=$('#wipe');w.style.background=color;w.style.setProperty('--x',LP.x+'px');w.style.setProperty('--y',LP.y+'px');w.textContent=emoji||'';
   w.className='';void w.offsetWidth;w.className='on';beep('step');
   setTimeout(()=>{cb&&cb();requestAnimationFrame(()=>{w.className='on out';setTimeout(()=>{w.className=''},480)})},520)}
-
-/* =========================================================
-   DÉMARRAGE
-   ========================================================= */
-load();
-Object.assign(A,A_ONB);
-if(!G.persona){hideLoader();showOnb()}
-else{
-  PAR=buildTrack();
-  makeBubbles();
-  city=initCity();
-  if(!city){fallbackCity();hideLoader()}else city.onReady(hideLoader);
-  renderCity();
-  setTimeout(()=>{const h=$('#hint');if(h)h.style.opacity=0},6000);
-  if(!G.char)creator(true);
-  else if(G.run&&G.screen==='board'){R=G.run;showBoard();resumeModal()}
-  else if(G.justStarted){G.justStarted=false;save();toast(`Bienvenue en ville, ${G.char.name} ! 🏙️`);setTimeout(()=>openPar(0),900)}
-}
 
 /* =========================================================
    APPLICATION INSTALLABLE (PWA) + TUTO
@@ -1813,6 +1863,35 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))window.addE
 /* Étoiles du ciel */
 (()=>{const st=$('#stars');if(!st)return;let sh='';for(let i=0;i<110;i++){const x=Math.random()*100,y=Math.random()*70,a=(.4+Math.random()*.6).toFixed(2);sh+=`${sh?',':''}${x.toFixed(1)}vw ${y.toFixed(1)}vh 0 ${Math.random()<.15?1:0}px rgba(255,255,255,${a})`}st.style.boxShadow=sh;st.style.background='#fff'})();
 setTimeout(hideLoader,8000);
+</script>
+<script src="js/kit.js"></script>
+<script src="js/content.js"></script>
+<script src="js/papers.js"></script>
+<script src="js/interiors.js"></script>
+<script src="js/street.js"></script>
+<script src="js/courses.js"></script>
+<script src="js/bourse.js"></script>
+<script src="js/home.js"></script>
+<script src="js/academy.js"></script>
+<script src="js/tuto.js"></script>
+<script>
+/* =========================================================
+   DÉMARRAGE
+   ========================================================= */
+load();migrateRun();
+Object.assign(A,A_ONB);
+if(!G.persona){hideLoader();showOnb()}
+else{
+  PAR=buildTrack();
+  makeBubbles();
+  city=initCity();
+  if(!city){fallbackCity();hideLoader()}else city.onReady(hideLoader);
+  renderCity();
+  setTimeout(()=>{const h=$('#hint');if(h)h.style.opacity=0},6000);
+  if(!G.char)creator(true);
+  else if(G.run&&G.screen==='board'){R=G.run;showBoard();resumeModal();setTimeout(hideLoader,700)}
+  else if(G.justStarted){G.justStarted=false;save();setTimeout(()=>tour('city',false,()=>openPar(nextIdx())),900)}
+}
 </script>
 </body>
 </html>
